@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+    <!-- Give it color in gazebo -->
+    <gazebo reference='base'>
+        <material>Gazebo/Red</material>
+    </gazebo>
+
+    <gazebo reference='circle'>
+        <material>Gazebo/White</material>
+    </gazebo>
+
+    <gazebo reference='s0'>
+        <material>Gazebo/Blue</material>
+    </gazebo>
+
+    <gazebo reference='s1'>
+        <material>Gazebo/Red</material>
+    </gazebo>
+
+    <gazebo reference='s2'>
+        <material>Gazebo/White</material>
+    </gazebo>
+
+    <gazebo reference='s3'>
+        <material>Gazebo/Blue</material>
+    </gazebo>
+
+    <gazebo reference='grip_stick'>
+        <material>Gazebo/Red</material>
+    </gazebo>
+
+</robot>
