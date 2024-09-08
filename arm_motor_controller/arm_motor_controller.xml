@@ -1,0 +1,9 @@
+<library path="arm_motor_controller">
+  <class name="arm_motor_controller/ArmSystemHardware"
+         type="arm_motor_controller::ArmSystemHardware"
+         base_class_type="hardware_interface::SystemInterface">
+    <description>
+      The ros2_control interface for the arm hardware.
+    </description>
+  </class>
+</library>
