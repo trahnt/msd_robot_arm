@@ -6,10 +6,12 @@
   name="arm_three">
   <link name="world">
   </link>
+
   <joint name="world_to_link_0" type="fixed">
       <parent link="world"/>
       <child link="link_0"/>
   </joint>
+
   <link
     name="link_0">
     <inertial>
@@ -32,7 +34,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://solidworks_arm_description/meshes/visual/link_0.STL" />
+          filename="package://sw_arm_desc/meshes/visual/link_0.STL" />
       </geometry>
       <material
         name="">
@@ -46,10 +48,13 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://solidworks_arm_description/meshes/visual/link_0.STL" />
+          filename="package://sw_arm_desc/meshes/visual/link_0.STL" />
       </geometry>
     </collision>
   </link>
+
+
+
 
   <link
     name="link_1">
@@ -73,7 +78,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://solidworks_arm_description/meshes/visual/link_1.STL" />
+          filename="package://sw_arm_desc/meshes/visual/link_1.STL" />
       </geometry>
       <material
         name="">
@@ -87,10 +92,14 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://solidworks_arm_description/meshes/visual/link_1.STL" />
+          filename="package://sw_arm_desc/meshes/visual/link_1.STL" />
       </geometry>
     </collision>
   </link>
+
+
+
+
 
   <joint
     name="joint_1"
@@ -133,7 +142,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://solidworks_arm_description/meshes/visual/link_2.STL" />
+          filename="package://sw_arm_desc/meshes/visual/link_2.STL" />
       </geometry>
       <material
         name="">
@@ -147,7 +156,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://solidworks_arm_description/meshes/visual/link_2.STL" />
+          filename="package://sw_arm_desc/meshes/visual/link_2.STL" />
       </geometry>
     </collision>
   </link>
@@ -192,7 +201,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://solidworks_arm_description/meshes/visual/link_3.STL" />
+          filename="package://sw_arm_desc/meshes/visual/link_3.STL" />
       </geometry>
       <material
         name="">
@@ -206,7 +215,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://solidworks_arm_description/meshes/visual/link_3.STL" />
+          filename="package://sw_arm_desc/meshes/visual/link_3.STL" />
       </geometry>
     </collision>
   </link>
@@ -251,7 +260,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://solidworks_arm_description/meshes/visual/link_4.STL" />
+          filename="package://sw_arm_desc/meshes/visual/link_4.STL" />
       </geometry>
       <material
         name="">
@@ -265,7 +274,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://solidworks_arm_description/meshes/visual/link_4.STL" />
+          filename="package://sw_arm_desc/meshes/visual/link_4.STL" />
       </geometry>
     </collision>
   </link>
@@ -310,7 +319,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://solidworks_arm_description/meshes/visual/link_5.STL" />
+          filename="package://sw_arm_desc/meshes/visual/link_5.STL" />
       </geometry>
       <material
         name="">
@@ -324,7 +333,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://solidworks_arm_description/meshes/visual/link_5.STL" />
+          filename="package://sw_arm_desc/meshes/visual/link_5.STL" />
       </geometry>
     </collision>
   </link>
@@ -369,7 +378,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://solidworks_arm_description/meshes/visual/link_6.STL" />
+          filename="package://sw_arm_desc/meshes/visual/link_6.STL" />
       </geometry>
       <material
         name="">
@@ -383,7 +392,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://solidworks_arm_description/meshes/visual/link_6.STL" />
+          filename="package://sw_arm_desc/meshes/visual/link_6.STL" />
       </geometry>
     </collision>
   </link>
