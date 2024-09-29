@@ -115,8 +115,8 @@
       xyz="0 0 1" />
         <!-- FIXME OH MY GOD PLEASE NO -->
     <limit
-      lower="-1.57"
-      upper="1.570"
+      lower="-2"
+      upper="2"
       effort="1000"
       velocity="1000" />
   </joint>
@@ -174,8 +174,8 @@
       xyz="0 1 0" />
     <!-- FIXME TEMP VALUES -->
     <limit
-      lower="-1.57"
-      upper="1.570"
+      lower="-1.160"
+      upper="0.535"
       effort="1000"
       velocity="1000" />
   </joint>
@@ -233,8 +233,8 @@
       xyz="0 1 0" />
     <!-- FIXME TEMP VALUES -->
     <limit
-      lower="-1.57"
-      upper="1.570"
+      lower="-2.65"
+      upper="0.625"
       effort="1000"
       velocity="1000" />
   </joint>
@@ -351,8 +351,8 @@
       xyz="0 1 0" />
     <!-- FIXME TEMP VALUES -->
     <limit
-      lower="-1.57"
-      upper="1.570"
+      lower="-3.8"
+      upper="0.232"
       effort="1000"
       velocity="1000" />
   </joint>
