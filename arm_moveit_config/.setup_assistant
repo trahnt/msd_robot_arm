@@ -1,0 +1,27 @@
+moveit_setup_assistant_config:
+  urdf:
+    package: sw_arm_desc
+    relative_path: urdf/arm_three.urdf
+  srdf:
+    relative_path: config/arm_three.srdf
+  package_settings:
+    author_name: Ben LaGreca and Matt Heler
+    author_email: benlagreca02@gmail.com
+    generated_timestamp: 1727377489
+  control_xacro:
+    command:
+      - position
+      - velocity
+    state:
+      - position
+      - velocity
+  modified_urdf:
+    xacros:
+      - control_xacro
+  control_xacro:
+    command:
+      - position
+      - velocity
+    state:
+      - position
+      - velocity
