@@ -48,7 +48,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://sw_arm_desc/meshes/visual/link_0.STL" />
+          filename="package://sw_arm_desc/meshes/collision/link_0.STL" />
       </geometry>
     </collision>
   </link>
@@ -92,7 +92,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://sw_arm_desc/meshes/visual/link_1.STL" />
+          filename="package://sw_arm_desc/meshes/collision/link_1.STL" />
       </geometry>
     </collision>
   </link>
@@ -113,12 +113,11 @@
       link="link_1" />
     <axis
       xyz="0 0 1" />
-        <!-- FIXME OH MY GOD PLEASE NO -->
     <limit
       lower="-2"
       upper="2"
-      effort="1000"
-      velocity="1000" />
+      effort="1000.0"
+      velocity="1000.0" />
   </joint>
   <link
     name="link_2">
@@ -156,7 +155,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://sw_arm_desc/meshes/visual/link_2.STL" />
+          filename="package://sw_arm_desc/meshes/collision/link_2.STL" />
       </geometry>
     </collision>
   </link>
@@ -172,12 +171,11 @@
       link="link_2" />
     <axis
       xyz="0 1 0" />
-    <!-- FIXME TEMP VALUES -->
     <limit
       lower="-1.160"
       upper="0.535"
-      effort="1000"
-      velocity="1000" />
+      effort="1000.0"
+      velocity="1000.0" />
   </joint>
   <link
     name="link_3">
@@ -215,7 +213,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://sw_arm_desc/meshes/visual/link_3.STL" />
+          filename="package://sw_arm_desc/meshes/collision/link_3.STL" />
       </geometry>
     </collision>
   </link>
@@ -231,12 +229,11 @@
       link="link_3" />
     <axis
       xyz="0 1 0" />
-    <!-- FIXME TEMP VALUES -->
     <limit
       lower="-2.65"
       upper="0.625"
-      effort="1000"
-      velocity="1000" />
+      effort="1000.0"
+      velocity="1000.0" />
   </joint>
   <link
     name="link_4">
@@ -274,7 +271,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://sw_arm_desc/meshes/visual/link_4.STL" />
+          filename="package://sw_arm_desc/meshes/collision/link_4.STL" />
       </geometry>
     </collision>
   </link>
@@ -290,12 +287,11 @@
       link="link_4" />
     <axis
       xyz="1 0 0" />
-    <!-- FIXME TEMP VALUES -->
     <limit
       lower="-1.57"
       upper="1.570"
-      effort="1000"
-      velocity="1000" />
+      effort="1000.0"
+      velocity="1000.0" />
   </joint>
   <link
     name="link_5">
@@ -333,7 +329,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://sw_arm_desc/meshes/visual/link_5.STL" />
+          filename="package://sw_arm_desc/meshes/collision/link_5.STL" />
       </geometry>
     </collision>
   </link>
@@ -349,12 +345,11 @@
       link="link_5" />
     <axis
       xyz="0 1 0" />
-    <!-- FIXME TEMP VALUES -->
     <limit
       lower="-3.8"
       upper="0.232"
-      effort="1000"
-      velocity="1000" />
+      effort="1000.0"
+      velocity="1000.0" />
   </joint>
   <link
     name="link_6">
@@ -392,7 +387,7 @@
         rpy="0 0 0" />
       <geometry>
         <mesh
-          filename="package://sw_arm_desc/meshes/visual/link_6.STL" />
+          filename="package://sw_arm_desc/meshes/collision/link_6.STL" />
       </geometry>
     </collision>
   </link>
@@ -408,11 +403,10 @@
       link="link_6" />
     <axis
       xyz="1 0 0" />
-    <!-- FIXME TEMP VALUES -->
     <limit
       lower="-1.57"
       upper="1.570"
-      effort="1000"
-      velocity="1000" />
+      effort="1000.0"
+      velocity="1000.0" />
   </joint>
 </robot>
