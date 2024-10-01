@@ -33,6 +33,3 @@ cd ~/ros2_ws/
 colcon build --merge-install
 ```
 
-## Future Work
-
-- `hardware` package, which will contain all of Matt's low-level ros2 control stuff, more specifically, the class inheriting `hardware_interface::SystemInterface`
