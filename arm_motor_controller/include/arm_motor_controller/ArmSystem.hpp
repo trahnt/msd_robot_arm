@@ -1,10 +1,14 @@
 #ifndef ARM_SYSTEM_HPP
 #define ARM_SYSTEM_HPP
 
+#include <memory>
+
 #include "hardware_interface/hardware_info.hpp"
 #include "hardware_interface/system_interface.hpp"
 #include "rclcpp_lifecycle/state.hpp"
 #include "rclcpp/macros.hpp"
+
+#include "arm_motor_controller/Motor.hpp"
 
 namespace arm_motor_controller {
 
@@ -38,9 +42,7 @@ private:
     double hw_stop_sec_;
 
     // Store the command for the simulated robot
-    std::vector<double> hw_commands_;
-    std::vector<double> hw_positions_;
-    std::vector<double> hw_velocities_;
+    std::map<std::string, Motor> motors;
 };
 
 } // namespace arm_motor_controller

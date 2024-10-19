@@ -23,6 +23,7 @@ add_library(
   arm_motor_controller
   SHARED
   src/ArmSystem.cpp
+  src/Motor.cpp
 )
 target_compile_features(arm_motor_controller PUBLIC cxx_std_17)
 target_include_directories(arm_motor_controller PUBLIC
@@ -42,6 +43,9 @@ install(
   DIRECTORY include/
   DESTINATION include/arm_motor_controller
 )
+
+install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
+install(DIRECTORY config DESTINATION share/${PROJECT_NAME})
 
 install(TARGETS arm_motor_controller
   EXPORT export_arm_motor_controller
