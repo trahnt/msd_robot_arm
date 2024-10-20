@@ -11,3 +11,7 @@ Because we will most likely be re-doing the generation (so it won't be called ar
 
 `<name>.ros2_control.xacro`
 : the ros2_control high level interface, which defines all the different command interfaces, and state interfaces. The `<hardware>` tags currently are defined for `gazebo_ros2_control`
+
+NOTE: if doing a fresh install, you may encounter an issue with "capabilities".
+[this is how to fix
+it](https://robotics.stackexchange.com/questions/110134/trouble-launching-moveit2-configurations)
