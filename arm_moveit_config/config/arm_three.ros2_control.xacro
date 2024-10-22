@@ -6,7 +6,9 @@
         <ros2_control name="${name}" type="system">
             <hardware>
                 <!-- By default, set up controllers for simulation. This won't work on real hardware -->
-                <plugin>mock_components/GenericSystem</plugin>
+                <!-- by NOT default, I'm gonna tell this to use gazebo -->
+                <!-- <plugin>mock_components/GenericSystem</plugin> -->
+                <plugin>gazebo_ros2_control/GazeboSystem</plugin>
             </hardware>
             <joint name="joint_1">
                 <command_interface name="position"/>
@@ -58,5 +60,15 @@
             </joint>
 
         </ros2_control>
+
+        <gazebo>
+            <plugin name="gazebo_ros2_control" filename="libgazebo_ros2_control">
+                <!-- when gazebo fires up gazebo_ros2_control plugin, use this config -->
+                <parameters>
+                    $(find arm_moveit_config)/config/ros2_control.yaml
+                </parameters>
+
+            </plugin>
+        </gazebo>
     </xacro:macro>
 </robot>

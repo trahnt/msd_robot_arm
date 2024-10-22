@@ -370,6 +370,7 @@
   </joint>
 
 
+  <!-- The fake version of link 6 for sim purposes-->
   <link
     name="link_6_fake">
     <inertial>
@@ -410,6 +411,7 @@
   </link>
 
 
+  <!-- The joint that actually "grips" -->
   <joint
       name="grip_joint"
       type="prismatic">
@@ -422,14 +424,32 @@
       <axis
           xyz="0 1 0"/>
       <limit
-          lower="-0.25"
-          upper="0.25"
+          lower="-0.0125"
+          upper="0.025"
           effort="1000.0"
           velocity="1000.0"/>
   </joint>
 
-  <link
-    name="gripper_link">
+
+  <joint
+      name="grip_joint_slave"
+      type="prismatic">
+      <mimic joint="grip_joint" multiplier="-1" offset="0"/>
+      <origin
+          xyz="0.025 -0.025 0"/>
+      <parent link="link_6_fake"/>
+      <child link="gripper_link_slave"/>
+      <axis xyz="0 1 0"/>
+      <limit
+          lower="-0.0125"
+          upper="0.025"
+          effort="1000.0"
+          velocity="1000.0"/>
+  </joint>
+
+
+
+  <link name="gripper_link">
     <inertial>
       <origin
         xyz="0.14271 -0.00023122 -4.6735E-05"
@@ -468,6 +488,40 @@
   </link>
 
 
+  <link
+    name="gripper_link_slave">
+    <inertial>
+      <origin
+        xyz="0.14271 -0.00023122 -4.6735E-05"
+        rpy="0 0 0" />
+      <mass
+        value="0.28883" />
+      <inertia
+        ixx="7.0401E-05"
+        ixy="-2.5638E-09"
+        ixz="1.8488E-10"
+        iyy="0.00026091"
+        iyz="4.5918E-12"
+        izz="0.00025609" />
+    </inertial>
+    <visual>
+      <origin xyz="0.025 0 0"/>
+      <geometry>
+          <box size="0.1 0.025 0.025"/>
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.75294 0.75294 0.75294 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin xyz="-0.025 0 0"/>
+      <geometry>
+          <box size="0.1 0.025 0.025"/>
+      </geometry>
+    </collision>
+  </link>
 
 
   <!--
