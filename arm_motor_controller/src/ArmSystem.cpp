@@ -46,7 +46,7 @@ hardware_interface::CallbackReturn ArmSystemHardware::on_init(const hardware_int
 
         std::string motorType;
         uint8_t deviceID;
-        double startingPos;
+        double startingPos = 0;
 
         if (auto search = joint.parameters.find("type"); search != joint.parameters.end()) {
             motorType = search->second;
@@ -64,13 +64,13 @@ hardware_interface::CallbackReturn ArmSystemHardware::on_init(const hardware_int
             return hardware_interface::CallbackReturn::ERROR;
         }
 
-        if (auto search = joint.parameters.find("initial_value"); search != joint.parameters.end()) {
-            startingPos = std::stof(search->second);
-        } else {
-            RCLCPP_FATAL(rclcpp::get_logger("ArmController"), "Joint '%s' missing parameter \"initial_va2\"",
-                         joint.name.c_str());
-            return hardware_interface::CallbackReturn::ERROR;
-        }
+        // if (auto search = joint.parameters.find("initial_value"); search != joint.parameters.end()) {
+        //     startingPos = std::stof(search->second);
+        // } else {
+        //     RCLCPP_FATAL(rclcpp::get_logger("ArmController"), "Joint '%s' missing parameter \"initial_va2\"",
+        //                  joint.name.c_str());
+        //     return hardware_interface::CallbackReturn::ERROR;
+        // }
 
         motors.emplace(joint.name, Motor(deviceID, startingPos));
     }

@@ -52,19 +52,19 @@ def generate_launch_description():
         [
             FindPackageShare("arm_motor_controller"),
             "config",
-            "arm_controller.yaml",
+            "arm_controllers.yaml",
         ]
     )
     rviz_config_file = PathJoinSubstitution(
         [FindPackageShare("arm_motor_controller"), "config", "moveit.rviz"]
     )
 
-    # control_node = Node(
-    #     package="controller_manager",
-    #     executable="ros2_control_node",
-    #     parameters=[robot_controllers],
-    #     output="both",
-    # )
+    control_node = Node(
+        package="controller_manager",
+        executable="ros2_control_node",
+        parameters=[robot_controllers],
+        output="both",
+    )
     robot_state_pub_node = Node(
         package="robot_state_publisher",
         executable="robot_state_publisher",
@@ -88,11 +88,11 @@ def generate_launch_description():
         arguments=["joint_state_broadcaster"],
     )
 
-    # robot_controller_spawner = Node(
-    #     package="controller_manager",
-    #     executable="spawner",
-    #     arguments=["arm_controller", "--param-file", robot_controllers],
-    # )
+    robot_controller_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["arm_motor_controller", "--param-file", robot_controllers],
+    )
 
     # Delay rviz start after `joint_state_broadcaster`
     delay_rviz_after_joint_state_broadcaster_spawner = RegisterEventHandler(
@@ -104,21 +104,20 @@ def generate_launch_description():
 
     # Delay start of joint_state_broadcaster after `robot_controller`
     # TODO(anyone): This is a workaround for flaky tests. Remove when fixed.
-    # delay_joint_state_broadcaster_after_robot_controller_spawner = RegisterEventHandler(
-    #     event_handler=OnProcessExit(
-    #         target_action=robot_controller_spawner,
-    #         on_exit=[joint_state_broadcaster_spawner],
-    #     )
-    # )
+    delay_joint_state_broadcaster_after_robot_controller_spawner = RegisterEventHandler(
+        event_handler=OnProcessExit(
+            target_action=robot_controller_spawner,
+            on_exit=[joint_state_broadcaster_spawner],
+        )
+    )
 
     nodes = [
-        # control_node,
+        control_node,
         robot_state_pub_node,
         # robot_controller_spawner,
-        # delay_rviz_after_joint_state_broadcaster_spawner,
-        # joint_state_broadcaster_spawner
-        # delay_joint_state_broadcaster_after_robot_controller_spawner,
-        rviz_node
+        delay_rviz_after_joint_state_broadcaster_spawner,
+        joint_state_broadcaster_spawner,
+        delay_joint_state_broadcaster_after_robot_controller_spawner,
     ]
 
     return LaunchDescription(declared_arguments + nodes)
