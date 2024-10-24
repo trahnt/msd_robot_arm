@@ -1,13 +1,13 @@
 moveit_setup_assistant_config:
   urdf:
     package: sw_arm_desc
-    relative_path: urdf/arm_three.urdf
+    relative_path: urdf/arm_end_effector.urdf
   srdf:
-    relative_path: config/arm_three.srdf
+    relative_path: config/arm_end_effector.srdf
   package_settings:
-    author_name: Ben LaGreca and Matt Heler
+    author_name: Ben LaGreca
     author_email: benlagreca02@gmail.com
-    generated_timestamp: 1727634749
+    generated_timestamp: 1729777120
   control_xacro:
     command:
       - position

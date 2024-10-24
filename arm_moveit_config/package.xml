@@ -4,9 +4,9 @@
   <name>arm_moveit_config</name>
   <version>0.3.0</version>
   <description>
-     An automatically generated package with all the configuration and launch files for using the arm_three with the MoveIt Motion Planning Framework
+     An automatically generated package with all the configuration and launch files for using the arm_end_effector with the MoveIt Motion Planning Framework
   </description>
-  <maintainer email="benlagreca02@gmail.com">Ben LaGreca and Matt Heler</maintainer>
+  <maintainer email="benlagreca02@gmail.com">Ben LaGreca</maintainer>
 
   <license>BSD</license>
 
@@ -14,7 +14,7 @@
   <url type="bugtracker">https://github.com/ros-planning/moveit2/issues</url>
   <url type="repository">https://github.com/ros-planning/moveit2</url>
 
-  <author email="benlagreca02@gmail.com">Ben LaGreca and Matt Heler</author>
+  <author email="benlagreca02@gmail.com">Ben LaGreca</author>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
@@ -34,6 +34,7 @@
   <exec_depend>moveit_configs_utils</exec_depend>
   <exec_depend>moveit_ros_move_group</exec_depend>
   <exec_depend>moveit_ros_visualization</exec_depend>
+  <exec_depend>moveit_ros_warehouse</exec_depend>
   <exec_depend>moveit_setup_assistant</exec_depend>
   <exec_depend>robot_state_publisher</exec_depend>
   <exec_depend>rviz2</exec_depend>
@@ -41,6 +42,7 @@
   <exec_depend>rviz_default_plugins</exec_depend>
   <exec_depend>sw_arm_desc</exec_depend>
   <exec_depend>tf2_ros</exec_depend>
+  <exec_depend>warehouse_ros_mongo</exec_depend>
   <exec_depend>xacro</exec_depend>
 
 
