@@ -4,7 +4,7 @@
   <name>arm_moveit_config</name>
   <version>0.3.0</version>
   <description>
-     An automatically generated package with all the configuration and launch files for using the arm_three with the MoveIt Motion Planning Framework
+     An automatically generated package with all the configuration and launch files for using the arm_end_effector.urdf with the MoveIt Motion Planning Framework
   </description>
   <maintainer email="benlagreca02@gmail.com">Ben LaGreca and Matt Heler</maintainer>
 
@@ -28,9 +28,8 @@
   <exec_depend>xacro</exec_depend>
   <!-- The next 2 packages are required for the gazebo simulation.
        We don't include them by default to prevent installing gazebo and all its dependencies. -->
-  <!-- Ben says, we want gazebo! so I uncommented them -->
-  <exec_depend>joint_trajectory_controller</exec_depend>
-  <exec_depend>gazebo_ros_control</exec_depend>
+  <!-- <exec_depend>joint_trajectory_controller</exec_depend> -->
+  <!-- <exec_depend>gazebo_ros_control</exec_depend> -->
   <exec_depend>controller_manager</exec_depend>
   <exec_depend>moveit_configs_utils</exec_depend>
   <exec_depend>moveit_ros_move_group</exec_depend>
