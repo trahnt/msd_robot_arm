@@ -91,7 +91,7 @@ def generate_launch_description():
     arm_controller_spawner = Node(
         package="controller_manager",
         executable="spawner",
-        arguments=["arm_end_effector_controller", "-c", "/controller_manager"],
+        arguments=["gripper_group_controller", "-c", "/controller_manager"],
     )
 
     # Launch as much as possible in components
