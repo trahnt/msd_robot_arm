@@ -34,18 +34,21 @@ def load_yaml(package_name, file_path):
 
 def generate_launch_description():
     moveit_config = (
-        MoveItConfigsBuilder("moveit_resources_panda")
-        .robot_description(file_path="config/panda.urdf.xacro")
-        .to_moveit_configs()
+        MoveItConfigsBuilder(robot_name="arm_end_effector", package_name="arm_moveit_config")
+        .robot_description(file_path="config/arm_end_effector.urdf.xacro")
+        .to_moveit_configs()  # makes it return a moveit config
     )
 
     # Get parameters for the Servo node
-    servo_yaml = load_yaml("moveit_servo", "config/panda_simulated_config.yaml")
-    servo_params = {"moveit_servo": servo_yaml}
+    servo_yaml = load_yaml("arm_servoing", "config/arm_simulated_config.yaml")
+    if servo_yaml is None:
+        raise Exception("Couldn't load yaml!!!! ABORTING")
+
+    servo_params = {"arm_servoing": servo_yaml}
 
     # RViz
     rviz_config_file = (
-        get_package_share_directory("moveit_servo") + "/config/demo_rviz_config.rviz"
+        get_package_share_directory("arm_servoing") + "/config/demo_rviz_config.rviz"
     )
     rviz_node = Node(
         package="rviz2",
@@ -61,7 +64,7 @@ def generate_launch_description():
 
     # ros2_control using FakeSystem as hardware
     ros2_controllers_path = os.path.join(
-        get_package_share_directory("moveit_resources_panda_moveit_config"),
+        get_package_share_directory("arm_moveit_config"),
         "config",
         "ros2_controllers.yaml",
     )
@@ -84,10 +87,11 @@ def generate_launch_description():
         ],
     )
 
-    panda_arm_controller_spawner = Node(
+    # MAY BREAK, took a guess here
+    arm_controller_spawner = Node(
         package="controller_manager",
         executable="spawner",
-        arguments=["panda_arm_controller", "-c", "/controller_manager"],
+        arguments=["arm_end_effector_controller", "-c", "/controller_manager"],
     )
 
     # Launch as much as possible in components
@@ -119,7 +123,7 @@ def generate_launch_description():
                 package="tf2_ros",
                 plugin="tf2_ros::StaticTransformBroadcasterNode",
                 name="static_tf2_broadcaster",
-                parameters=[{"child_frame_id": "/panda_link0", "frame_id": "/world"}],
+                parameters=[{"child_frame_id": "/link_0", "frame_id": "/world"}],
             ),
             ComposableNode(
                 package="moveit_servo",
@@ -134,6 +138,7 @@ def generate_launch_description():
         ],
         output="screen",
     )
+
     # Launch a standalone Servo node.
     # As opposed to a node component, this may be necessary (for example) if Servo is running on a different PC
     servo_node = Node(
@@ -153,7 +158,7 @@ def generate_launch_description():
             rviz_node,
             ros2_control_node,
             joint_state_broadcaster_spawner,
-            panda_arm_controller_spawner,
+            arm_controller_spawner,
             servo_node,
             container,
         ]
