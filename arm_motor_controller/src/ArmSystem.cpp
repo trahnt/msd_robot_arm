@@ -64,6 +64,9 @@ hardware_interface::CallbackReturn ArmSystemHardware::on_init(const hardware_int
             return hardware_interface::CallbackReturn::ERROR;
         }
 
+        RCLCPP_INFO(rclcpp::get_logger("ArmController"), "Joint '%s' created with '%s' motor", joint.name.c_str(),
+                    motorType.c_str());
+
         // if (auto search = joint.parameters.find("initial_value"); search != joint.parameters.end()) {
         //     startingPos = std::stof(search->second);
         // } else {
@@ -110,11 +113,19 @@ hardware_interface::CallbackReturn ArmSystemHardware::on_cleanup(const rclcpp_li
 
 hardware_interface::CallbackReturn ArmSystemHardware::on_activate(const rclcpp_lifecycle::State &previous_state) {
     (void)previous_state;
+
+    for (auto motor : motors) {
+        motor.second.enable();
+    }
     return hardware_interface::CallbackReturn::SUCCESS;
 }
 
 hardware_interface::CallbackReturn ArmSystemHardware::on_deactivate(const rclcpp_lifecycle::State &previous_state) {
     (void)previous_state;
+
+    for (auto motor : motors) {
+        motor.second.disable();
+    }
     return hardware_interface::CallbackReturn::SUCCESS;
 }
 

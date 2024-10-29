@@ -21,6 +21,8 @@ from launch.substitutions import Command, FindExecutable, PathJoinSubstitution, 
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
 
+from moveit_configs_utils import MoveItConfigsBuilder
+
 
 def generate_launch_description():
     # Declare arguments
@@ -32,6 +34,13 @@ def generate_launch_description():
             description="Start RViz2 automatically with this launch file.",
         )
     )
+
+    moveit_config = (
+        MoveItConfigsBuilder("arm")
+        .robot_description(file_path="config/armtest.urdf.xacro")
+        .to_moveit_configs()
+    )
+
     # Get URDF via xacro
     robot_description_content = Command(
         [
@@ -62,7 +71,7 @@ def generate_launch_description():
     control_node = Node(
         package="controller_manager",
         executable="ros2_control_node",
-        parameters=[robot_controllers],
+        parameters=[robot_description, robot_controllers],
         output="both",
     )
     robot_state_pub_node = Node(
@@ -79,6 +88,7 @@ def generate_launch_description():
         name="rviz2",
         output="log",
         arguments=["-d", rviz_config_file],
+        parameters=[robot_description]
         condition=IfCondition(gui),
     )
 
@@ -114,7 +124,6 @@ def generate_launch_description():
     nodes = [
         control_node,
         robot_state_pub_node,
-        # robot_controller_spawner,
         delay_rviz_after_joint_state_broadcaster_spawner,
         joint_state_broadcaster_spawner,
         delay_joint_state_broadcaster_after_robot_controller_spawner,
