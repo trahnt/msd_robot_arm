@@ -41,10 +41,7 @@ def generate_launch_description():
 
     # Get parameters for the Servo node
     servo_yaml = load_yaml("arm_servoing", "config/arm_simulated_config.yaml")
-    if servo_yaml is None:
-        raise Exception("Couldn't load yaml!!!! ABORTING")
-
-    servo_params = {"arm_servoing": servo_yaml}
+    servo_params = {"moveit_servo": servo_yaml}
 
     # RViz
     rviz_config_file = (
@@ -87,11 +84,10 @@ def generate_launch_description():
         ],
     )
 
-    # MAY BREAK, took a guess here
     arm_controller_spawner = Node(
         package="controller_manager",
         executable="spawner",
-        arguments=["gripper_group_controller", "-c", "/controller_manager"],
+        arguments=["arm_planning_group_controller", "-c", "/controller_manager"],
     )
 
     # Launch as much as possible in components
@@ -104,14 +100,14 @@ def generate_launch_description():
             # Example of launching Servo as a node component
             # Assuming ROS2 intraprocess communications works well, this is a more efficient way.
             # ComposableNode(
-            #     package="moveit_servo",
-            #     plugin="moveit_servo::ServoServer",
-            #     name="servo_server",
-            #     parameters=[
-            #         servo_params,
-            #         moveit_config.robot_description,
-            #         moveit_config.robot_description_semantic,
-            #     ],
+                # package="moveit_servo",
+                # plugin="moveit_servo::ServoServer",
+                # name="servo_server",
+                # parameters=[
+                    # servo_params,
+                    # moveit_config.robot_description,
+                    # moveit_config.robot_description_semantic,
+                # ],
             # ),
             ComposableNode(
                 package="robot_state_publisher",
