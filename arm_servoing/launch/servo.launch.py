@@ -122,8 +122,9 @@ def generate_launch_description():
                 parameters=[{"child_frame_id": "/link_0", "frame_id": "/world"}],
             ),
             ComposableNode(
-                package="moveit_servo",
-                plugin="moveit_servo::JoyToServoPub",
+                package="arm_servoing",
+                # TODO this needs to change to MY JoyToServoPub
+                plugin="arm_servoing::MyJoyToServoPub",
                 name="controller_to_servo_node",
             ),
             ComposableNode(
