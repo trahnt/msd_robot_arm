@@ -43,8 +43,8 @@ enum Button
   LEFT_BUMPER = 4,
   RIGHT_BUMPER = 5,
   CHANGE_VIEW = 6,
-  MENU = 7,
-  HOME = 8,
+  MINUS = 7,
+  PLUS = 8,
   LEFT_STICK_CLICK = 9,
   RIGHT_STICK_CLICK = 10
 };
@@ -69,19 +69,27 @@ bool convertJoyToCmd(const std::vector<float>& axes, const std::vector<int>& but
 {
   // Give joint jogging priority because it is only buttons
   // If any joint jog command is requested, we are only publishing joint commands
-  if (buttons[A] || buttons[B] || buttons[X] || buttons[Y] || axes[D_PAD_X] || axes[D_PAD_Y])
+  bool dpadPressed = axes[D_PAD_X] || axes[D_PAD_Y];
+  bool abxyPressed = buttons[A] || buttons[B] || buttons[X] || buttons[Y];
+  bool lrPressed = buttons[LEFT_STICK_CLICK] || buttons[RIGHT_STICK_CLICK];
+  if (dpadPressed || abxyPressed || lrPressed)
   {
     // Map the D_PAD to the proximal joints
     joint->joint_names.push_back("joint_1");
     joint->velocities.push_back(axes[D_PAD_X]);
     joint->joint_names.push_back("joint_2");
-    joint->velocities.push_back(axes[D_PAD_Y]);
+    joint->velocities.push_back(-axes[D_PAD_Y]);
+
+    joint->joint_names.push_back("joint_3");
+    joint->velocities.push_back(buttons[LEFT_STICK_CLICK] - buttons[RIGHT_STICK_CLICK]);
 
     // Map the diamond to the distal joints
+    joint->joint_names.push_back("joint_5");
+    joint->velocities.push_back(buttons[A] - buttons[B]);
     joint->joint_names.push_back("joint_6");
-    joint->velocities.push_back(buttons[B] - buttons[X]);
-    joint->joint_names.push_back("joint_6");
-    joint->velocities.push_back(buttons[Y] - buttons[A]);
+    joint->velocities.push_back(buttons[X] - buttons[Y]);
+
+
     return false;
   }
 
@@ -111,7 +119,7 @@ void updateCmdFrame(std::string& frame_name, const std::vector<int>& buttons)
 {
   if (buttons[CHANGE_VIEW] && frame_name == EEF_FRAME_ID)
     frame_name = BASE_FRAME_ID;
-  else if (buttons[MENU] && frame_name == BASE_FRAME_ID)
+  else if (buttons[MINUS] && frame_name == BASE_FRAME_ID)
     frame_name = EEF_FRAME_ID;
 }
 
@@ -207,7 +215,7 @@ public:
     {
       // publish the JointJog
       joint_msg->header.stamp = this->now();
-      joint_msg->header.frame_id = "link_3";
+      joint_msg->header.frame_id = "link_0";
       joint_pub_->publish(std::move(joint_msg));
     }
   }
