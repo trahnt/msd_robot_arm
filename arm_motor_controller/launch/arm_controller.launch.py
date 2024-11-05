@@ -82,7 +82,7 @@ def generate_launch_description():
     controller_manager  = Node(
         package="controller_manager",
         executable="ros2_control_node",
-        parameters=[moveit_config.robot_description, robot_controllers],
+        parameters=[ moveit_config.robot_description, robot_controllers],
         output="both",
         # remappings=[
         #     ("/controller_manager/robot_description", "/robot_description"),
@@ -101,11 +101,25 @@ def generate_launch_description():
         ],
     )
 
+    forward_position_controller_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["forward_position_controller", "--param-file", robot_controllers],
+    )
+
     # robot_controller_spawner = Node(
     #     package="controller_manager",
     #     executable="spawner",
     #     arguments=["arm_motor_controller", "--param-file", robot_controllers],
     # )
+
+    # Publish TF
+    robot_state_publisher = Node(
+        package="robot_state_publisher",
+        executable="robot_state_publisher",
+        output="both",
+        parameters=[moveit_config.robot_description],
+    )
 
     arm_controller_spawner = Node(
         package="controller_manager",
@@ -126,16 +140,6 @@ def generate_launch_description():
         output="log",
         arguments=["--frame-id", "world", "--child-frame-id", "base_link"],
     )
-
-    # Publish TF
-    robot_state_publisher = Node(
-        package="robot_state_publisher",
-        executable="robot_state_publisher",
-        name="robot_state_publisher",
-        output="both",
-        parameters=[moveit_config.robot_description],
-    )
-
 
     move_group_configuration = {
         "publish_robot_description_semantic": True,
@@ -194,12 +198,15 @@ def generate_launch_description():
     # )
 
     nodes = [
-        controller_manager,
         robot_state_publisher,
+        controller_manager,
         static_tf,
         # arm_controller_spawner,
         run_move_group_node,
-        joint_state_broadcaster_spawner, arm_controller_spawner, gripper_controller_spawner,
+        joint_state_broadcaster_spawner, 
+        arm_controller_spawner, 
+        gripper_controller_spawner,
+        forward_position_controller_spawner,
         # delay_planning_group_controllers_after_robot_controller_spawner,
         delay_rviz_after_joint_state_broadcaster_spawner,
         # joint_state_broadcaster_spawner,
