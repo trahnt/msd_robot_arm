@@ -67,16 +67,16 @@ hardware_interface::CallbackReturn ArmSystemHardware::on_init(const hardware_int
         RCLCPP_INFO(rclcpp::get_logger("ArmController"), "Joint '%s' created with '%s' motor", joint.name.c_str(),
                     motorType.c_str());
 
-        // if (auto search = joint.parameters.find("initial_value"); search != joint.parameters.end()) {
-        //     startingPos = std::stof(search->second);
+        // if (auto search = ) {
+        startingPos = stof(joint.state_interfaces[0].initial_value);
         // } else {
-        //     RCLCPP_FATAL(rclcpp::get_logger("ArmController"), "Joint '%s' missing parameter \"initial_va2\"",
+        //     RCLCPP_FATAL(rclcpp::get_logger("ArmController"), "Joint '%s' missing parameter \"initial_value\"",
         //                  joint.name.c_str());
         //     return hardware_interface::CallbackReturn::ERROR;
         // }
 
-        if(deviceID == 1)
-            startingPos = 0.5;
+        // if(deviceID == 1)
+        //     startingPos = 0.5;
 
         motors.emplace(joint.name, Motor(deviceID, startingPos));
     }
@@ -158,6 +158,12 @@ hardware_interface::return_type ArmSystemHardware::read(const rclcpp::Time &time
 }
 
 hardware_interface::return_type ArmSystemHardware::write(const rclcpp::Time &time, const rclcpp::Duration &period) {
+    static double lastupdate = 0.0;
+    if(time.seconds() - lastupdate > 1){
+        RCLCPP_INFO(rclcpp::get_logger("ArmController"), "Got write update! Current time: %f, Period: %f",time.seconds(), period.seconds());
+        lastupdate = time.seconds();
+    }
+
     for (auto motor : motors) {
         motor.second.write(time.seconds(), period.seconds());
     }

@@ -37,9 +37,22 @@ def generate_launch_description():
 
     should_publish = True
 
+    # moveit_config = (
+    #     MoveItConfigsBuilder("arm_end_effector", package_name="arm_moveit_config")
+    #     .robot_description(file_path="../arm_motor_controller/config/armtest.urdf.xacro")
+    #     .to_moveit_configs()
+    # )
+
     moveit_config = (
         MoveItConfigsBuilder("arm_end_effector", package_name="arm_moveit_config")
         .robot_description(file_path="../arm_motor_controller/config/armtest.urdf.xacro")
+        .trajectory_execution(file_path="config/moveit_controllers.yaml")
+        .planning_scene_monitor(
+            publish_robot_description=True, publish_robot_description_semantic=True
+        )
+        .planning_pipelines(
+            pipelines=["ompl"]#, "stomp", "pilz_industrial_motion_planner"]
+        )
         .to_moveit_configs()
     )
 
@@ -61,9 +74,9 @@ def generate_launch_description():
 
     robot_controllers = PathJoinSubstitution(
         [
-            FindPackageShare("arm_moveit_config"),
+            FindPackageShare("arm_motor_controller"),
             "config",
-            "ros2_controllers.yaml",
+            "arm_controllers.yaml",
         ]
     )
 
@@ -82,11 +95,11 @@ def generate_launch_description():
     controller_manager  = Node(
         package="controller_manager",
         executable="ros2_control_node",
-        parameters=[ moveit_config.robot_description, robot_controllers],
+        parameters=[ robot_controllers],
         output="both",
-        # remappings=[
-        #     ("/controller_manager/robot_description", "/robot_description"),
-        # ],
+        remappings=[
+                ("~/robot_description", "robot_description"),
+            ],
     )
 
     joint_state_broadcaster_spawner = Node(
@@ -99,13 +112,19 @@ def generate_launch_description():
             "--controller-manager",
             "/controller_manager",
         ],
+        remappings=[
+                ("~/robot_description", "robot_description"),
+            ],
     )
 
-    forward_position_controller_spawner = Node(
-        package="controller_manager",
-        executable="spawner",
-        arguments=["forward_position_controller", "--param-file", robot_controllers],
-    )
+    # forward_position_controller_spawner = Node(
+    #     package="controller_manager",
+    #     executable="spawner",
+    #     arguments=["forward_position_controller", "--param-file", robot_controllers],
+    #     remappings=[
+    #             ("~/robot_description", "robot_description"),
+    #         ],
+    # )
 
     # robot_controller_spawner = Node(
     #     package="controller_manager",
@@ -119,18 +138,29 @@ def generate_launch_description():
         executable="robot_state_publisher",
         output="both",
         parameters=[moveit_config.robot_description],
+        remappings=[
+                ("~/robot_description", "robot_description"),
+            ],
     )
 
     arm_controller_spawner = Node(
         package="controller_manager",
         executable="spawner",
+        # arguments=["arm_planning_group_controller", "--param-file", robot_controllers],
         arguments=["arm_planning_group_controller", "-c", "/controller_manager"],
+        remappings=[
+                ("~/robot_description", "robot_description"),
+            ],
     )
 
     gripper_controller_spawner = Node(
         package="controller_manager",
         executable="spawner",
+        # arguments=["gripper_group_controller", "--param-file", robot_controllers],
         arguments=["gripper_group_controller", "-c", "/controller_manager"],
+        remappings=[
+                ("~/robot_description", "robot_description"),
+            ],
     )
 
     static_tf = Node(
@@ -139,6 +169,9 @@ def generate_launch_description():
         name="static_transform_publisher",
         output="log",
         arguments=["--frame-id", "world", "--child-frame-id", "base_link"],
+        remappings=[
+                ("~/robot_description", "robot_description"),
+            ],
     )
 
     move_group_configuration = {
@@ -155,12 +188,15 @@ def generate_launch_description():
         "monitor_dynamics": False,
     }
 
-    run_move_group_node = Node(
-        package="moveit_ros_move_group",
-        executable="move_group",
-        output="screen",
-        parameters=[moveit_config.to_dict(), move_group_configuration],
-    )
+    # run_move_group_node = Node(
+    #     package="moveit_ros_move_group",
+    #     executable="move_group",
+    #     output="screen",
+    #     parameters=[moveit_config.to_dict(), move_group_configuration],
+    #     remappings=[
+    #             ("~/robot_description", "robot_description"),
+    #         ],
+    # )
     
     gui = LaunchConfiguration("gui")
     rviz_node = Node(
@@ -202,13 +238,13 @@ def generate_launch_description():
         controller_manager,
         static_tf,
         # arm_controller_spawner,
-        run_move_group_node,
+        # run_move_group_node,
         joint_state_broadcaster_spawner, 
         arm_controller_spawner, 
         gripper_controller_spawner,
-        forward_position_controller_spawner,
+        # forward_position_controller_spawner,
         # delay_planning_group_controllers_after_robot_controller_spawner,
-        delay_rviz_after_joint_state_broadcaster_spawner,
+        # delay_rviz_after_joint_state_broadcaster_spawner,
         # joint_state_broadcaster_spawner,
         # delay_joint_state_broadcaster_after_robot_controller_spawner,
     ]
