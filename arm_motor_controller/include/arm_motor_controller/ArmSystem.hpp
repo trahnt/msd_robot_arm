@@ -42,7 +42,7 @@ private:
     double hw_stop_sec_;
 
     // Store the command for the simulated robot
-    std::map<std::string, Motor> motors;
+    std::map<std::string, std::unique_ptr<Motor>> motors;
 };
 
 } // namespace arm_motor_controller

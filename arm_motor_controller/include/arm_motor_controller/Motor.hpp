@@ -31,6 +31,9 @@ protected:
 
     double targetVel;
     double currentVel;
+
+private:
+    double lastupdate = 0.0;
 };
 
 } // namespace arm_motor_controller

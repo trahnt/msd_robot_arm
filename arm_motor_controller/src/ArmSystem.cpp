@@ -78,7 +78,7 @@ hardware_interface::CallbackReturn ArmSystemHardware::on_init(const hardware_int
         // if(deviceID == 1)
         //     startingPos = 0.5;
 
-        motors.emplace(joint.name, Motor(deviceID, startingPos));
+        motors.insert(std::make_pair(joint.name, std::make_unique<Motor>(deviceID, startingPos)));
     }
 
     RCLCPP_INFO(rclcpp::get_logger("ArmController"), "Initalized hardware with %ld motors", motors.size());
@@ -89,8 +89,8 @@ hardware_interface::CallbackReturn ArmSystemHardware::on_init(const hardware_int
 std::vector<hardware_interface::StateInterface> ArmSystemHardware::export_state_interfaces() {
     std::vector<hardware_interface::StateInterface> state_interfaces;
 
-    for (auto motor : motors) {
-        motor.second.exportState(state_interfaces, motor.first);
+    for (auto const& motor : motors) {
+        motor.second->exportState(state_interfaces, motor.first);
         RCLCPP_INFO(rclcpp::get_logger("ArmController"), "Joint '%s' state exported", motor.first.c_str());
     }
 
@@ -100,8 +100,8 @@ std::vector<hardware_interface::StateInterface> ArmSystemHardware::export_state_
 std::vector<hardware_interface::CommandInterface> ArmSystemHardware::export_command_interfaces() {
     std::vector<hardware_interface::CommandInterface> command_interfaces;
 
-    for (auto motor : motors) {
-        motor.second.exportCommand(command_interfaces, motor.first);
+    for (auto const& motor : motors) {
+        motor.second->exportCommand(command_interfaces, motor.first);
         RCLCPP_INFO(rclcpp::get_logger("ArmController"), "Joint '%s' command exported", motor.first.c_str());
 
     }
@@ -122,8 +122,8 @@ hardware_interface::CallbackReturn ArmSystemHardware::on_cleanup(const rclcpp_li
 hardware_interface::CallbackReturn ArmSystemHardware::on_activate(const rclcpp_lifecycle::State &previous_state) {
     (void)previous_state;
 
-    for (auto motor : motors) {
-        motor.second.enable();
+    for (auto const& motor : motors) {
+        motor.second->enable();
         RCLCPP_INFO(rclcpp::get_logger("ArmController"), "Joint '%s' enabled", motor.first.c_str());
     }
     return hardware_interface::CallbackReturn::SUCCESS;
@@ -132,8 +132,8 @@ hardware_interface::CallbackReturn ArmSystemHardware::on_activate(const rclcpp_l
 hardware_interface::CallbackReturn ArmSystemHardware::on_deactivate(const rclcpp_lifecycle::State &previous_state) {
     (void)previous_state;
 
-    for (auto motor : motors) {
-        motor.second.disable();
+    for (auto const& motor : motors) {
+        motor.second->disable();
         RCLCPP_INFO(rclcpp::get_logger("ArmController"), "Joint '%s' disabled", motor.first.c_str());
     }
     return hardware_interface::CallbackReturn::SUCCESS;
@@ -151,8 +151,8 @@ hardware_interface::return_type ArmSystemHardware::read(const rclcpp::Time &time
         lastupdate = time.seconds();
     }
 
-    for (auto motor : motors) {
-        motor.second.read(time.seconds(), period.seconds());
+    for (auto const& motor : motors) {
+        motor.second->read(time.seconds(), period.seconds());
     }
     return hardware_interface::return_type::OK;
 }
@@ -164,8 +164,8 @@ hardware_interface::return_type ArmSystemHardware::write(const rclcpp::Time &tim
         lastupdate = time.seconds();
     }
 
-    for (auto motor : motors) {
-        motor.second.write(time.seconds(), period.seconds());
+    for (auto const& motor : motors) {
+        motor.second->write(time.seconds(), period.seconds());
     }
 
     return hardware_interface::return_type::OK;

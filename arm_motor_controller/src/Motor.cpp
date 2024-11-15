@@ -33,17 +33,24 @@ int Motor::exportCommand(std::vector<hardware_interface::CommandInterface> &comm
     return 0;
 }
 
-int Motor::read(double time, double period) { return 0; };
+int Motor::read(double time, double period) { 
+    // if(time - lastupdate > 1.0){
+    //     RCLCPP_INFO(rclcpp::get_logger("MotorState"), "Current position for joint %d is %e.", id, currentPos);
+    //     lastupdate = time;
+    // }
+
+    return 0; 
+};
 
 int Motor::write(double time, double period) {
-    if (abs(targetPos - currentPos) > 0.0001) {
-        RCLCPP_INFO(rclcpp::get_logger("MotorState"), "Position updated for joint %d, was %.4f, now %.4f", id,
-                    currentPos, targetPos);
-    }
-    if (abs(targetVel - currentVel) > 0.0001) {
-        RCLCPP_INFO(rclcpp::get_logger("MotorState"), "Velocity updated for joint %d, was %.4f, now %.4f", id,
-                    currentVel, targetVel);
-    }
+    // if (abs(targetPos - currentPos) > 0.0001) {
+    //     RCLCPP_INFO(rclcpp::get_logger("MotorState"), "Position updated for joint %d, was %.4f, now %.4f.", id,
+    //                 currentPos, targetPos);
+    // }
+    // if (abs(targetVel - currentVel) > 0.0001) {
+    //     RCLCPP_INFO(rclcpp::get_logger("MotorState"), "Velocity updated for joint %d, was %.4f, now %.4f.", id,
+    //                 currentVel, targetVel);
+    // }
     currentPos = targetPos;
     currentVel = targetVel;
 

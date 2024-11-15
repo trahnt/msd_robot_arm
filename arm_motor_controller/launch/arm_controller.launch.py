@@ -37,12 +37,7 @@ def generate_launch_description():
 
     should_publish = True
 
-    # moveit_config = (
-    #     MoveItConfigsBuilder("arm_end_effector", package_name="arm_moveit_config")
-    #     .robot_description(file_path="../arm_motor_controller/config/armtest.urdf.xacro")
-    #     .to_moveit_configs()
-    # )
-
+    # Get URDF and Moveit configuration
     moveit_config = (
         MoveItConfigsBuilder("arm_end_effector", package_name="arm_moveit_config")
         .robot_description(file_path="../arm_motor_controller/config/armtest.urdf.xacro")
@@ -56,37 +51,12 @@ def generate_launch_description():
         .to_moveit_configs()
     )
 
-    # Get URDF via xacro
-    # robot_description_content = Command(
-    #     [
-    #         PathJoinSubstitution([FindExecutable(name="xacro")]),
-    #         " ",
-    #         PathJoinSubstitution(
-    #             [
-    #                 FindPackageShare("arm_motor_controller"),
-    #                 "config",
-    #                 "armtest.urdf.xacro",
-    #             ]
-    #         ),
-    #     ]
-    # )
-    # robot_description = {"robot_description": robot_description_content}
+    
+
 
     robot_controllers = PathJoinSubstitution(
-        [
-            FindPackageShare("arm_motor_controller"),
-            "config",
-            "arm_controllers.yaml",
-        ]
+        [FindPackageShare("arm_motor_controller"), "config", "arm_controllers.yaml"]
     )
-
-    # robot_controllers = PathJoinSubstitution(
-    #     [
-    #         FindPackageShare("arm_motor_controller"),
-    #         "config",
-    #         "arm_controllers.yaml",
-    #     ]
-    # )
 
     rviz_config_file = PathJoinSubstitution(
         [FindPackageShare("arm_motor_controller"), "config", "moveit.rviz"]
@@ -116,21 +86,6 @@ def generate_launch_description():
                 ("~/robot_description", "robot_description"),
             ],
     )
-
-    # forward_position_controller_spawner = Node(
-    #     package="controller_manager",
-    #     executable="spawner",
-    #     arguments=["forward_position_controller", "--param-file", robot_controllers],
-    #     remappings=[
-    #             ("~/robot_description", "robot_description"),
-    #         ],
-    # )
-
-    # robot_controller_spawner = Node(
-    #     package="controller_manager",
-    #     executable="spawner",
-    #     arguments=["arm_motor_controller", "--param-file", robot_controllers],
-    # )
 
     # Publish TF
     robot_state_publisher = Node(
@@ -188,15 +143,15 @@ def generate_launch_description():
         "monitor_dynamics": False,
     }
 
-    # run_move_group_node = Node(
-    #     package="moveit_ros_move_group",
-    #     executable="move_group",
-    #     output="screen",
-    #     parameters=[moveit_config.to_dict(), move_group_configuration],
-    #     remappings=[
-    #             ("~/robot_description", "robot_description"),
-    #         ],
-    # )
+    run_move_group_node = Node(
+        package="moveit_ros_move_group",
+        executable="move_group",
+        output="screen",
+        parameters=[moveit_config.to_dict(), move_group_configuration],
+        remappings=[
+                ("~/robot_description", "robot_description"),
+            ],
+    )
     
     gui = LaunchConfiguration("gui")
     rviz_node = Node(
@@ -224,28 +179,16 @@ def generate_launch_description():
     #     )
     # )
 
-    # Delay start of joint_state_broadcaster after `robot_controller`
-    # TODO(anyone): This is a workaround for flaky tests. Remove when fixed.
-    # delay_joint_state_broadcaster_after_robot_controller_spawner = RegisterEventHandler(
-    #     event_handler=OnProcessExit(
-    #         target_action=robot_controller_spawner,
-    #         on_exit=[joint_state_broadcaster_spawner],
-    #     )
-    # )
-
     nodes = [
         robot_state_publisher,
         controller_manager,
         static_tf,
-        # arm_controller_spawner,
-        # run_move_group_node,
         joint_state_broadcaster_spawner, 
         arm_controller_spawner, 
         gripper_controller_spawner,
-        # forward_position_controller_spawner,
+        run_move_group_node,
         # delay_planning_group_controllers_after_robot_controller_spawner,
-        # delay_rviz_after_joint_state_broadcaster_spawner,
-        # joint_state_broadcaster_spawner,
+        delay_rviz_after_joint_state_broadcaster_spawner,
         # delay_joint_state_broadcaster_after_robot_controller_spawner,
     ]
 

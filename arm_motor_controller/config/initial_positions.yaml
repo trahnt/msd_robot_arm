@@ -1,10 +1,10 @@
 # Default initial positions for arm_three's ros2_control fake system
 
 initial_positions:
-  grip_joint: 0
-  joint_1: 0
-  joint_2: 0
-  joint_3: 0
-  joint_4: 0
-  joint_5: 0
-  joint_6: 0
+  grip_joint: 0.0
+  joint_1: 0.0
+  joint_2: 0.0
+  joint_3: 0.0
+  joint_4: 0.0
+  joint_5: 0.0
+  joint_6: 0.0
