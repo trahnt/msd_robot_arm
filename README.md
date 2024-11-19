@@ -4,9 +4,30 @@ This repository is for all of the ROS2 packages made for the MSD Spot robot arm.
 # Required software
 - Ubuntu 22.04 (Jammy)
 - ROS2 Humble
+- Ros2\_control
 - Moveit
 
-# Usage
+# Projet Layout
+
+There are a few packages in this directory as follows
+
+`arm_motor_controller`
+: This has the `ros2_control` controllers and their 
+
+`arm_moveit_config`
+: The moveit launch and launch configurations for inverse kinematics solving, and
+motion planning
+
+`arm_servoing`
+: Contains the realtime servoing custom node for robot control and its
+respective launch files and launch file configs
+
+`sw_arm_desc`
+: "Solidworks arm description". This is the result of the [Solidworks URDF
+exporter](http://wiki.ros.org/sw_urdf_exporter), and the
+[sw2urdf\_ros2](https://github.com/xiaoming-sun6/sw2urdf_ros2) tool.
+
+
 
 # Building
 
