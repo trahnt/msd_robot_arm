@@ -13,6 +13,7 @@ set(PACKAGE_INCLUDE_DEPENDS
   pluginlib
   rclcpp
   rclcpp_lifecycle
+  urdf
 )
 
 # find dependencies
@@ -27,6 +28,7 @@ add_library(
   SHARED
   src/ArmSystem.cpp
   src/Motor.cpp
+  src/Servo57C.cpp
 )
 target_compile_features(arm_motor_controller PUBLIC cxx_std_17)
 target_include_directories(arm_motor_controller PUBLIC

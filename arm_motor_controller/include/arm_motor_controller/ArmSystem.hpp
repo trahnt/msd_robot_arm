@@ -2,6 +2,7 @@
 #define ARM_SYSTEM_HPP
 
 #include <memory>
+#include <map>
 
 #include "hardware_interface/hardware_info.hpp"
 #include "hardware_interface/system_interface.hpp"
