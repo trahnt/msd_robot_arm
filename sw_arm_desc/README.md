@@ -10,5 +10,7 @@ This is the folder output by the [solidworks URDF export tool](http://wiki.ros.o
 
 # Future Improvements
 
-- create simplified collision meshes, moveit's planning is incredibly slow
-- Re-export, but this time with proper gripper manipulation. Right now, the gripper doesn't move at all, and we're using the 6th DoF as the pseudo-gripper. This is fine for now, but this will need to be changed for the final product. This also means the moveit config will need to be re-generated.
+- create simplified collision meshes, moveit's planning is slow
+- The gripper's complex kinematics (I believe) are impossible to model with
+  URDF. The gripper has been replaced with a simple box based gripper that was
+  manually written in the URDF
