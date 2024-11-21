@@ -7,9 +7,7 @@ This repository is for all of the ROS2 packages made for the MSD Spot robot arm.
 - Ros2\_control
 - Moveit
 
-# Projet Layout
-
-There are a few packages in this directory as follows
+# Project Layout
 
 `arm_motor_controller`
 : This has the `ros2_control` controllers and their 
@@ -25,7 +23,8 @@ respective launch files and launch file configs
 `sw_arm_desc`
 : "Solidworks arm description". This is the result of the [Solidworks URDF
 exporter](http://wiki.ros.org/sw_urdf_exporter), and the
-[sw2urdf\_ros2](https://github.com/xiaoming-sun6/sw2urdf_ros2) tool.
+[sw2urdf\_ros2](https://github.com/xiaoming-sun6/sw2urdf_ros2) tool. Contains
+the true arm URDF that gets referenced by many other packages.
 
 
 
