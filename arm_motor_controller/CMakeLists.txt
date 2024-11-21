@@ -3,6 +3,7 @@ project(arm_motor_controller)
 
 set(CMAKE_CXX_STANDARD 17) # Set the desired C++ standard (e.g., 11, 14, 17, 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
@@ -29,6 +30,7 @@ add_library(
   src/ArmSystem.cpp
   src/Motor.cpp
   src/Servo57C.cpp
+  src/Communication/RS485.cpp
 )
 target_compile_features(arm_motor_controller PUBLIC cxx_std_17)
 target_include_directories(arm_motor_controller PUBLIC

@@ -8,12 +8,48 @@
 #include "urdf/model.h"
 
 #include "arm_motor_controller/ArmSystem.hpp"
+#include "arm_motor_controller/Communication/RS485.hpp"
 #include "arm_motor_controller/Motor.hpp"
 #include "arm_motor_controller/Servo57C.hpp"
 
-namespace arm_motor_controller {
+namespace {
 
 enum class ParameterType { Int, Double, String };
+
+/**
+ * Parses a map of parameters to the individual variables and convert it to the correct type
+ */
+hardware_interface::CallbackReturn
+parseParameters(const std::unordered_map<std::string, std::string> parameters,
+                const std::map<std::string, std::pair<ParameterType, std::any>> parameterMap, std::string logPrefix) {
+    for (const auto &param : parameterMap) {
+        auto search = parameters.find(param.first);
+        if (search == parameters.end()) {
+            RCLCPP_FATAL(rclcpp::get_logger("ArmController"), "%s missing parameter \"%s\"", logPrefix.c_str(),
+                         param.first.c_str());
+            return hardware_interface::CallbackReturn::ERROR;
+        }
+
+        switch (param.second.first) {
+        case ParameterType::Int:
+            *std::any_cast<int *>(param.second.second) = std::stoi(search->second);
+            break;
+        case ParameterType::Double:
+            *std::any_cast<double *>(param.second.second) = std::stof(search->second);
+            break;
+        case ParameterType::String:
+            *std::any_cast<std::string *>(param.second.second) = search->second;
+            break;
+        default:
+            break;
+        }
+    }
+    return hardware_interface::CallbackReturn::SUCCESS;
+}
+
+} // namespace
+
+namespace arm_motor_controller {
 
 hardware_interface::CallbackReturn ArmSystemHardware::on_init(const hardware_interface::HardwareInfo &info) {
     if (hardware_interface::SystemInterface::on_init(info) != CallbackReturn::SUCCESS) {
@@ -26,9 +62,42 @@ hardware_interface::CallbackReturn ArmSystemHardware::on_init(const hardware_int
         return hardware_interface::CallbackReturn::ERROR;
     }
 
-        
-    // hw_start_sec_ = hardware_interface::stod(info_.hardware_parameters["example_param_hw_start_duration_sec"]);
+    // Load RS485 connection settings
+    std::string port;
+    std::string parityStr;
+    int baudrate;
+    int byteSize;
+    int stopBits;
+    int timeout;
 
+    const std::map<std::string, std::pair<ParameterType, std::any>> CommunicationParams = {
+        {"port", std::make_pair(ParameterType::String, &port)},
+        {"baudrate", std::make_pair(ParameterType::Int, &baudrate)},
+        {"parity", std::make_pair(ParameterType::String, &parityStr)},
+        {"bytesize", std::make_pair(ParameterType::Int, &byteSize)},
+        {"stopbits", std::make_pair(ParameterType::Int, &stopBits)},
+        {"timeout", std::make_pair(ParameterType::Int, &timeout)},
+    };
+
+    if (parseParameters(info.hardware_parameters, CommunicationParams, "RS485 communication") !=
+        hardware_interface::CallbackReturn::SUCCESS) {
+        return hardware_interface::CallbackReturn::ERROR;
+    }
+
+    RS485Parity parity;
+    if (parityStr.compare("None") == 0) {
+        parity = RS485Parity::None;
+    } else if (parityStr.compare("Even") == 0) {
+        parity = RS485Parity::Even;
+    } else if (parityStr.compare("Odd") == 0) {
+        parity = RS485Parity::Odd;
+    } else {
+        RCLCPP_FATAL(rclcpp::get_logger("ArmController"), "Invalid RS485 parity type: \"%s\"", parityStr.c_str());
+    }
+
+    rs485 = std::make_shared<RS485>(port.c_str(), baudrate, parity, byteSize, stopBits, timeout);
+
+    // Load joint configs:
     for (const auto &joint : info.joints) {
 
         // Do som config error checking before initializing a motor
@@ -65,8 +134,10 @@ hardware_interface::CallbackReturn ArmSystemHardware::on_init(const hardware_int
         double RPM;
 
         double startingPos = 0;
+        urdf::JointLimitsSharedPtr jointLimits = model.getJoint(joint.name.c_str())->limits;
 
-        std::map<std::string, std::pair<ParameterType, std::any>> parameters = {
+        // Parse hardware parameters
+        const std::map<std::string, std::pair<ParameterType, std::any>> jointParams = {
             {"type", std::make_pair(ParameterType::String, &motorType)},
             {"id", std::make_pair(ParameterType::Int, &deviceID)},
             {"min", std::make_pair(ParameterType::Double, &motorLimits[0])},
@@ -74,53 +145,31 @@ hardware_interface::CallbackReturn ArmSystemHardware::on_init(const hardware_int
             {"rpm", std::make_pair(ParameterType::Double, &RPM)},
         };
 
-        for (const auto &param : parameters) {
-            auto search = joint.parameters.find(param.first);
-            if (search == joint.parameters.end()) {
-                RCLCPP_FATAL(rclcpp::get_logger("ArmController"), "Joint '%s' missing parameter \"%s\"",
-                             joint.name.c_str(), param.first.c_str());
-                return hardware_interface::CallbackReturn::ERROR;
-            }
+        std::stringstream ss;
+        ss << "Joint '" << joint.name << "'";
 
-            switch (param.second.first) {
-            case ParameterType::Int:
-                *std::any_cast<int *>(param.second.second) = std::stoi(search->second);
-                break;
-            case ParameterType::Double:
-                *std::any_cast<double *>(param.second.second) = std::stof(search->second);
-                break;
-            case ParameterType::String:
-                *std::any_cast<std::string *>(param.second.second) = search->second;
-                break;
-            default:
-                break;
-            }
+        if (parseParameters(joint.parameters, jointParams, ss.str()) != hardware_interface::CallbackReturn::SUCCESS) {
+            return hardware_interface::CallbackReturn::ERROR;
         }
 
-        urdf::JointLimitsSharedPtr jointLimits = model.getJoint(joint.name.c_str())->limits;
-
+        std::unique_ptr<Motor> motor;
         // Create the corrsponding motor type for the joint
-        if(motorType.compare("iCL") == 0){
-            motors.insert(
-                std::make_pair(joint.name, std::make_unique<Motor>(deviceID, jointLimits->lower, jointLimits->upper,
-                                                                   motorLimits[0], motorLimits[1], startingPos)));
+        if (motorType.compare("iCL") == 0) {
+            motor = std::make_unique<Motor>(rs485, deviceID, startingPos);
         } else if (motorType.compare("Servo57C") == 0) {
-            // motors.insert(
-            //     std::make_pair(joint.name, std::make_unique<Motor>(deviceID, jointLimits->lower, jointLimits->upper,
-                                                                //    motorLimits[0], motorLimits[1], startingPos)));
-            motors.insert(
-                std::make_pair(joint.name, std::make_unique<Servo57C>(deviceID, jointLimits->lower, jointLimits->upper,
-                                                                      motorLimits[0], motorLimits[1], startingPos)));
-
+            motor = std::make_unique<Servo57C>(rs485, deviceID, startingPos);
         } else if (motorType.compare("none") == 0) {
-            motors.insert(
-                std::make_pair(joint.name, std::make_unique<Motor>(deviceID, jointLimits->lower, jointLimits->upper,
-                                                                   motorLimits[0], motorLimits[1], startingPos)));
+            motor = std::make_unique<Motor>(rs485, deviceID, startingPos);
         } else { // Invalid type
             RCLCPP_FATAL(rclcpp::get_logger("ArmController"), "Joint '%s' has invalid type \"%s\"", joint.name.c_str(),
                          motorType.c_str());
             return hardware_interface::CallbackReturn::ERROR;
         }
+
+        motor->setJointLimits(jointLimits->lower, jointLimits->upper);
+        motor->setMotorLimits(motorLimits[0], motorLimits[1]);
+        motor->setMotorSpeedScale(RPM);
+        motors.insert(std::make_pair(joint.name, std::move(motor)));
 
         RCLCPP_INFO(rclcpp::get_logger("ArmController"), "Joint '%s' created with '%s' motor", joint.name.c_str(),
                     motorType.c_str());
@@ -155,12 +204,20 @@ std::vector<hardware_interface::CommandInterface> ArmSystemHardware::export_comm
 
 hardware_interface::CallbackReturn ArmSystemHardware::on_configure(const rclcpp_lifecycle::State &previous_state) {
     (void)previous_state;
-    return hardware_interface::CallbackReturn::SUCCESS;
+    if (rs485->connect()) {
+        return hardware_interface::CallbackReturn::SUCCESS;
+    } else {
+        return hardware_interface::CallbackReturn::FAILURE;
+    }
 }
 
 hardware_interface::CallbackReturn ArmSystemHardware::on_cleanup(const rclcpp_lifecycle::State &previous_state) {
     (void)previous_state;
-    return hardware_interface::CallbackReturn::SUCCESS;
+    if (rs485->disconnect()) {
+        return hardware_interface::CallbackReturn::SUCCESS;
+    } else {
+        return hardware_interface::CallbackReturn::FAILURE;
+    }
 }
 
 hardware_interface::CallbackReturn ArmSystemHardware::on_activate(const rclcpp_lifecycle::State &previous_state) {

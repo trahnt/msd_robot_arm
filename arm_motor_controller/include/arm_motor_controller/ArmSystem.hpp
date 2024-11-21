@@ -10,6 +10,7 @@
 #include "rclcpp/macros.hpp"
 
 #include "arm_motor_controller/Motor.hpp"
+#include "arm_motor_controller/Communication/RS485.hpp"
 
 namespace arm_motor_controller {
 
@@ -44,6 +45,9 @@ private:
 
     // Store the command for the simulated robot
     std::map<std::string, std::unique_ptr<Motor>> motors;
+
+    // Shared RS485 connection
+    std::shared_ptr<RS485> rs485;
 };
 
 } // namespace arm_motor_controller

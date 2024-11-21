@@ -51,9 +51,6 @@ def generate_launch_description():
         .to_moveit_configs()
     )
 
-    
-
-
     robot_controllers = PathJoinSubstitution(
         [FindPackageShare("arm_motor_controller"), "config", "arm_controllers.yaml"]
     )
