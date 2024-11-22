@@ -18,12 +18,15 @@
                 <param name="min">-32000</param>
                 <param name="max">32000</param>
                 <param name="rpm">64</param>
+                <param name="homePosition">0</param>
                 <command_interface name="position"/>
                 <command_interface name="velocity"/>
+                <command_interface name="home"/>
                 <state_interface name="position">
                   <param name="initial_value">${initial_positions['joint_1']}</param>
                 </state_interface>
                 <state_interface name="velocity"/>
+                <state_interface name="home"/>
             </joint>
             <joint name="joint_2">
                 <param name="type">none</param>
@@ -31,12 +34,15 @@
                 <param name="min">0</param>
                 <param name="max">3200</param>
                 <param name="rpm">32</param>
+                <param name="homePosition">0</param>
                 <command_interface name="position"/>
                 <command_interface name="velocity"/>
+                <command_interface name="home"/>
                 <state_interface name="position">
                   <param name="initial_value">${initial_positions['joint_2']}</param>
                 </state_interface>
                 <state_interface name="velocity"/>
+                <state_interface name="home"/>
             </joint>
             <joint name="joint_3">
                 <param name="type">none</param>
@@ -44,12 +50,15 @@
                 <param name="min">0</param>
                 <param name="max">3200</param>
                 <param name="rpm">32</param>
+                <param name="homePosition">0</param>
                 <command_interface name="position"/>
                 <command_interface name="velocity"/>
+                <command_interface name="home"/>
                 <state_interface name="position">
                   <param name="initial_value">${initial_positions['joint_3']}</param>
                 </state_interface>
                 <state_interface name="velocity"/>
+                <state_interface name="home"/>
             </joint>
             <joint name="joint_4">
                 <param name="type">none</param>
@@ -57,12 +66,15 @@
                 <param name="min">0</param>
                 <param name="max">3200</param>
                 <param name="rpm">32</param>
+                <param name="homePosition">0</param>
                 <command_interface name="position"/>
                 <command_interface name="velocity"/>
+                <command_interface name="home"/>
                 <state_interface name="position">
                   <param name="initial_value">${initial_positions['joint_4']}</param>
                 </state_interface>
                 <state_interface name="velocity"/>
+                <state_interface name="home"/>
             </joint>
             <joint name="joint_5">
                 <param name="type">none</param>
@@ -70,12 +82,15 @@
                 <param name="min">0</param>
                 <param name="max">3200</param>
                 <param name="rpm">32</param>
+                <param name="homePosition">0</param>
                 <command_interface name="position"/>
                 <command_interface name="velocity"/>
+                <command_interface name="home"/>
                 <state_interface name="position">
                   <param name="initial_value">${initial_positions['joint_5']}</param>
                 </state_interface>
                 <state_interface name="velocity"/>
+                <state_interface name="home"/>
             </joint>
             <joint name="joint_6">
                 <!-- <param name="type">Servo42C</param> -->
@@ -84,12 +99,15 @@
                 <param name="min">0</param>
                 <param name="max">3200</param>
                 <param name="rpm">32</param>
+                <param name="homePosition">0</param>
                 <command_interface name="position"/>
                 <command_interface name="velocity"/>
+                <command_interface name="home"/>
                 <state_interface name="position">
                   <param name="initial_value">${initial_positions['joint_6']}</param>
                 </state_interface>
                 <state_interface name="velocity"/>
+                <state_interface name="home"/>
             </joint>
             <joint name="grip_joint">
                 <!-- <param name="type">Servo42C</param> -->
@@ -98,12 +116,15 @@
                 <param name="min">0</param>
                 <param name="max">3200</param>
                 <param name="rpm">32</param>
+                <param name="homePosition">0</param>
                 <command_interface name="position"/>
                 <command_interface name="velocity"/>
+                <command_interface name="home"/>
                 <state_interface name="position">
                   <param name="initial_value">${initial_positions['grip_joint']}</param>
                 </state_interface>
                 <state_interface name="velocity"/>
+                <state_interface name="home"/>
             </joint>
         </ros2_control>
     </xacro:macro>

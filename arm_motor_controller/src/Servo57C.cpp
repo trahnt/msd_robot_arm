@@ -135,14 +135,6 @@ int Servo57C::writeParameter(uint8_t func, uint8_t &data) {
 int Servo57C::read(double time, double period) {
     (void)time, (void)period;
     // RCLCPP_INFO(rclcpp::get_logger("MotorState"), "Motor %d read update", id);
-    static uint8_t count = 0;
-
-    // update every other read to fix issue where motor doesn't move
-    // if (count < 2) {
-    //     count++;
-    //     return 0;
-    // }
-    // count = 0;
 
     EncoderData rawPos;
     int ret = readParameter(0x30, rawPos.raw, 6);

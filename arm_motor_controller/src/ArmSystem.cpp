@@ -102,7 +102,7 @@ hardware_interface::CallbackReturn ArmSystemHardware::on_init(const hardware_int
 
         // Do som config error checking before initializing a motor
         // Command interface checking
-        if (joint.command_interfaces.size() != 2) {
+        if (joint.command_interfaces.size() != 3) {
             RCLCPP_FATAL(rclcpp::get_logger("ArmController"),
                          "Joint '%s' has %zu command interfaces found. 2 expected.", joint.name.c_str(),
                          joint.command_interfaces.size());
@@ -116,7 +116,7 @@ hardware_interface::CallbackReturn ArmSystemHardware::on_init(const hardware_int
         }
 
         // State interface checking
-        if (joint.state_interfaces.size() != 2) {
+        if (joint.state_interfaces.size() != 3) {
             RCLCPP_FATAL(rclcpp::get_logger("ArmController"), "Joint '%s' has %zu state interfaces found. 2 expected.",
                          joint.name.c_str(), joint.command_interfaces.size());
             return hardware_interface::CallbackReturn::ERROR;
@@ -143,6 +143,7 @@ hardware_interface::CallbackReturn ArmSystemHardware::on_init(const hardware_int
             {"min", std::make_pair(ParameterType::Double, &motorLimits[0])},
             {"max", std::make_pair(ParameterType::Double, &motorLimits[1])},
             {"rpm", std::make_pair(ParameterType::Double, &RPM)},
+            {"homePosition", std::make_pair(ParameterType::Double, &startingPos)},
         };
 
         std::stringstream ss;
@@ -207,7 +208,7 @@ hardware_interface::CallbackReturn ArmSystemHardware::on_configure(const rclcpp_
     if (rs485->connect()) {
         return hardware_interface::CallbackReturn::SUCCESS;
     } else {
-        return hardware_interface::CallbackReturn::FAILURE;
+        return hardware_interface::CallbackReturn::FAILURE; // Set to success to ignore serial port
     }
 }
 

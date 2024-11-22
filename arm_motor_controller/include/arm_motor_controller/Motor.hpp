@@ -12,6 +12,9 @@
 
 namespace arm_motor_controller {
 
+// Custom command interface to trigger a homing sequence for a motor
+constexpr char HW_IF_HOME[] = "home";
+
 class Motor {
 public:
     Motor(std::shared_ptr<RS485> rs485, uint32_t id, double startingPos = 0);
@@ -61,9 +64,11 @@ protected:
 
     double rosCurrentPos;
     double rosTargetPos;
+    double rosTriggerHome;
 
     double rosCurrentVel;
     double rosTargetVel;
+    double rosIsHomed;
 
     double motorPos;
     double motorVel;

@@ -15,7 +15,7 @@ RS485::RS485(const char *portName, int baudrate, RS485Parity parity, uint8_t byt
 
 }
 
-RS485::~RS485() {}
+RS485::~RS485() { disconnect(); }
 
 bool RS485::connect() {
     connected = false;

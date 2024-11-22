@@ -15,3 +15,8 @@ rosdep update --rosdistro=$ROS_DISTRO
 sudo apt-get update
 sudo rosdep install --from-paths ./ -i -y --rosdistro ${ROS_DISTRO}
 ```
+
+## TODOs
+
+- Add support for ICL and Servo42D motors
+- Implement enable/disable functionality in motors
