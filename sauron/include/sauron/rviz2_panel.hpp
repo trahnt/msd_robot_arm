@@ -18,26 +18,30 @@
 
 namespace custom_panel
 {
-  class RvizPushButtonPanel : public rviz_common::Panel
+  class SauronPanel : public rviz_common::Panel
   {
     Q_OBJECT
   public:
-    explicit RvizPushButtonPanel(QWidget *parent = nullptr);
-    ~RvizPushButtonPanel();
+    explicit SauronPanel(QWidget *parent = nullptr);
+    ~SauronPanel();
 
     /// Load and save configuration data
     virtual void load(const rviz_common::Config &config) override;
     virtual void save(rviz_common::Config config) const override;
 
+
+  // for these, the name needs to match the UI component, see the .ui file to
+  // confirm
   private Q_SLOTS:
-    void on_pushButton1_clicked();
+    // void on_<BUTTON_NAME>_clicked();
+    void on_homeButton_clicked();
 
   private:
     std::unique_ptr<Ui::gui> ui_;
     rclcpp::Node::SharedPtr node_;
 
   protected:
-    rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr button1_pub_;
+    rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr homerPub_;
     std_msgs::msg::Bool msg_;
   };
 } // custom_panel

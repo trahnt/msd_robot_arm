@@ -30,7 +30,6 @@ Panels:
     Name: RvizPushButtonPanel
     PushButton:
       count_button_1: 0
-      count_button_2: 0
 Visualization Manager:
   Class: ""
   Displays:
