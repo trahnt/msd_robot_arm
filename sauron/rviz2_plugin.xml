@@ -1,0 +1,9 @@
+<library path="push_button_rviz_panel">
+
+  <class name="custom_panel/SauronPanel"
+         type="custom_panel::SauronPanel"
+         base_class_type="rviz_common::Panel">
+    <description>Custom pannel for controlling the arm</description>
+  </class>
+
+</library>
