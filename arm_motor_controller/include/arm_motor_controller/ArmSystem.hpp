@@ -1,10 +1,16 @@
 #ifndef ARM_SYSTEM_HPP
 #define ARM_SYSTEM_HPP
 
+#include <memory>
+#include <map>
+
 #include "hardware_interface/hardware_info.hpp"
 #include "hardware_interface/system_interface.hpp"
 #include "rclcpp_lifecycle/state.hpp"
 #include "rclcpp/macros.hpp"
+
+#include "arm_motor_controller/Motor.hpp"
+#include "arm_motor_controller/Communication/RS485.hpp"
 
 namespace arm_motor_controller {
 
@@ -38,9 +44,10 @@ private:
     double hw_stop_sec_;
 
     // Store the command for the simulated robot
-    std::vector<double> hw_commands_;
-    std::vector<double> hw_positions_;
-    std::vector<double> hw_velocities_;
+    std::map<std::string, std::unique_ptr<Motor>> motors;
+
+    // Shared RS485 connection
+    std::shared_ptr<RS485> rs485;
 };
 
 } // namespace arm_motor_controller

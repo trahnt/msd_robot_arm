@@ -10,3 +10,5 @@ SortIncludes: CaseSensitive
 SortUsingDeclarations: true
 SpacesBeforeTrailingComments: 1
 TabWidth: 4
+InsertBraces: true
+BreakBeforeBraces: Attach
