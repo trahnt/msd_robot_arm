@@ -43,7 +43,7 @@ def generate_launch_description():
                 [
                     FindPackageShare("marge"),
                     "config",
-                    "armtest.urdf.xacro",
+                    "armtest.ros2_control.xacro",
                 ]
             ),
         ]
@@ -60,13 +60,13 @@ def generate_launch_description():
     )
 
 
-    # will prob fail
+    # will prob fail but idc about rviz config file
     rviz_config_file = PathJoinSubstitution(
         [FindPackageShare("marge"), "r6bot/rviz", "view_robot.rviz"]
     )
 
 
-    control_node = Node(
+    controller_manager = Node(
         package="controller_manager",
         executable="ros2_control_node",
         parameters=[robot_controllers],
@@ -80,6 +80,19 @@ def generate_launch_description():
         output="both",
         parameters=[robot_description],
     )
+
+
+    static_tf = Node(
+        package="tf2_ros",
+        executable="static_transform_publisher",
+        name="static_transform_publisher",
+        output="log",
+        arguments=["--frame-id", "world", "--child-frame-id", "base_link"],
+        remappings=[
+                ("~/robot_description", "robot_description"),
+            ],
+    )
+   
 
 
     gui = LaunchConfiguration("gui")
@@ -98,10 +111,19 @@ def generate_launch_description():
         arguments=["joint_state_broadcaster"],
     )
 
-    robot_controller_spawner = Node(
+    # marge_spawner = Node(
+        # package="controller_manager",
+        # executable="spawner",
+        # arguments=["marge_controller", "--param-file", robot_controllers],
+    # )
+
+    marge_spawner = Node(
         package="controller_manager",
         executable="spawner",
-        arguments=["r6bot_controller", "--param-file", robot_controllers],
+        arguments=["marge_controller", "-c", "/controller_manager"],
+        remappings=[
+            ("~/robot_description", "robot_description"),
+        ],
     )
 
     # Delay rviz start after `joint_state_broadcaster`
@@ -114,19 +136,21 @@ def generate_launch_description():
 
     # Delay start of joint_state_broadcaster after `robot_controller`
     # TODO(anyone): This is a workaround for flaky tests. Remove when fixed.
-    delay_joint_state_broadcaster_after_robot_controller_spawner = RegisterEventHandler(
+    delay_joint_state_broadcaster_after_marge_spawner = RegisterEventHandler(
         event_handler=OnProcessExit(
-            target_action=robot_controller_spawner,
+            target_action=marge_spawner,
             on_exit=[joint_state_broadcaster_spawner],
         )
     )
 
     nodes = [
-        control_node,
         robot_state_pub_node,
-        robot_controller_spawner,
+        controller_manager,
+        static_tf,
+        marge_spawner,
+
         delay_rviz_after_joint_state_broadcaster_spawner,
-        delay_joint_state_broadcaster_after_robot_controller_spawner,
+        delay_joint_state_broadcaster_after_marge_spawner,
     ]
 
     return LaunchDescription(declared_arguments + nodes)

@@ -5,9 +5,11 @@ controller_manager:
     joint_state_broadcaster:
       type: joint_state_broadcaster/JointStateBroadcaster
 
-marge:
+    marge_controller:
+      type: marge/Marge
+
+marge_controller:
   ros__parameters:
-    type: marge/Marge
     joints:
       - joint_1
       - joint_2
