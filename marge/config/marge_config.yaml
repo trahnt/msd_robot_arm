@@ -17,9 +17,7 @@ marge:
       - joint_6
 
     command_interfaces:
-      - position
-      - velocity
+      - home
 
     state_interfaces:
-      - position
-      - velocity
+      - home

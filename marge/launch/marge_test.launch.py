@@ -32,20 +32,23 @@ def generate_launch_description():
             description="Start RViz2 automatically with this launch file.",
         )
     )
+
     # Get URDF via xacro
+    # NOTE this just gets a copy of matt's stuff that I put in this package
     robot_description_content = Command(
         [
             PathJoinSubstitution([FindExecutable(name="xacro")]),
             " ",
             PathJoinSubstitution(
                 [
-                    FindPackageShare("arm_moveit_config"),
+                    FindPackageShare("marge"),
                     "config",
-                    "arm_end_effector.urdf.xacro",
+                    "armtest.urdf.xacro",
                 ]
             ),
         ]
     )
+
     robot_description = {"robot_description": robot_description_content}
 
     robot_controllers = PathJoinSubstitution(
@@ -55,9 +58,13 @@ def generate_launch_description():
             "marge_config.yaml",
         ]
     )
+
+
+    # will prob fail
     rviz_config_file = PathJoinSubstitution(
-        [FindPackageShare("ros2_control_demo_description"), "r6bot/rviz", "view_robot.rviz"]
+        [FindPackageShare("marge"), "r6bot/rviz", "view_robot.rviz"]
     )
+
 
     control_node = Node(
         package="controller_manager",
@@ -65,12 +72,15 @@ def generate_launch_description():
         parameters=[robot_controllers],
         output="both",
     )
+
+
     robot_state_pub_node = Node(
         package="robot_state_publisher",
         executable="robot_state_publisher",
         output="both",
         parameters=[robot_description],
     )
+
 
     gui = LaunchConfiguration("gui")
     rviz_node = Node(

@@ -62,6 +62,13 @@ pluginlib_export_plugin_description_file(controller_interface marge.xml)
 
 
 
+###########
+# Install #
+###########
+install(
+    DIRECTORY launch config
+    DESTINATION share/${PROJECT_NAME}
+)
 
 
 
