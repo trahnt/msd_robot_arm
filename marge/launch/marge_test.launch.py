@@ -35,17 +35,10 @@ def generate_launch_description():
 
     # Get URDF via xacro
     # NOTE this just gets a copy of matt's stuff that I put in this package
-    robot_description_content = Command(
-        [
+    robot_description_content = Command( [
             PathJoinSubstitution([FindExecutable(name="xacro")]),
             " ",
-            PathJoinSubstitution(
-                [
-                    FindPackageShare("marge"),
-                    "config",
-                    "armtest.ros2_control.xacro",
-                ]
-            ),
+            PathJoinSubstitution([FindPackageShare("arm_motor_controller"), "config", "armtest.urdf.xacro"])
         ]
     )
 
@@ -71,6 +64,9 @@ def generate_launch_description():
         executable="ros2_control_node",
         parameters=[robot_controllers],
         output="both",
+        remappings=[
+            ("~/robot_description", "robot_description"),
+        ],
     )
 
 
@@ -143,14 +139,20 @@ def generate_launch_description():
         )
     )
 
+    spawn_marge_after_cm = RegisterEventHandler(
+        event_handler=OnProcessExit(
+            target_action=controller_manager,
+            on_exit=[marge_spawner],
+        )
+    )
+
     nodes = [
         robot_state_pub_node,
         controller_manager,
         static_tf,
-        marge_spawner,
-
-        delay_rviz_after_joint_state_broadcaster_spawner,
+        spawn_marge_after_cm,
         delay_joint_state_broadcaster_after_marge_spawner,
+        delay_rviz_after_joint_state_broadcaster_spawner,
     ]
 
     return LaunchDescription(declared_arguments + nodes)
