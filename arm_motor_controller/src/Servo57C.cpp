@@ -5,7 +5,6 @@
 namespace arm_motor_controller {
 
 namespace {
-#define ARRAY_LEN(arr) (sizeof(arr) / sizeof(arr[0]))
 
 /**
  * Message Struct for sending a data to the Servo57C. Uses a funny layout to easily be able to pack data in by name and
@@ -135,6 +134,7 @@ int Servo57C::writeParameter(uint8_t func, uint8_t &data) {
 int Servo57C::read(double time, double period) {
     (void)time, (void)period;
     // RCLCPP_INFO(rclcpp::get_logger("MotorState"), "Motor %d read update", id);
+    static int count = 0;
 
     EncoderData rawPos;
     int ret = readParameter(0x30, rawPos.raw, 6);
@@ -142,6 +142,13 @@ int Servo57C::read(double time, double period) {
         RCLCPP_WARN(rclcpp::get_logger("MotorState"), "Motor %d encountered and error while reading, got %d", id, ret);
         return -1;
     }
+
+    if (count < 2) {
+        count++;
+        return 0;
+    }
+
+    count = 0;
 
     std::stringstream ss;
     ss << std::hex << std::setfill('0');

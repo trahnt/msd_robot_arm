@@ -12,6 +12,8 @@
 
 namespace arm_motor_controller {
 
+#define ARRAY_LEN(arr) (sizeof(arr) / sizeof(arr[0]))
+
 // Custom command interface to trigger a homing sequence for a motor
 constexpr char HW_IF_HOME[] = "home";
 
@@ -30,6 +32,8 @@ public:
     };
 
     void setMotorSpeedScale(double speed) { scaledSpeed = speed; };
+
+    virtual int configure() { return 0; };
 
     virtual int enable();
     virtual int disable(bool isEmergency = false);

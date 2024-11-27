@@ -17,6 +17,7 @@ int Motor::enable() {
                 rosCurrentPos, rosTargetPos);
     return 0;
 }
+
 int Motor::disable(bool isEmergency) {
     RCLCPP_INFO(rclcpp::get_logger("MotorState"), "Disabling motor %d at position, current %.4f, target %.4f", id,
                 rosCurrentPos, rosTargetPos);

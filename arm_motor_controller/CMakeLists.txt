@@ -30,6 +30,7 @@ add_library(
   src/ArmSystem.cpp
   src/Motor.cpp
   src/Servo57C.cpp
+  src/ICLStepper.cpp
   src/Communication/RS485.cpp
 )
 target_compile_features(arm_motor_controller PUBLIC cxx_std_17)

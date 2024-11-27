@@ -9,6 +9,7 @@
 
 #include "arm_motor_controller/ArmSystem.hpp"
 #include "arm_motor_controller/Communication/RS485.hpp"
+#include "arm_motor_controller/ICLStepper.hpp"
 #include "arm_motor_controller/Motor.hpp"
 #include "arm_motor_controller/Servo57C.hpp"
 
@@ -155,9 +156,9 @@ hardware_interface::CallbackReturn ArmSystemHardware::on_init(const hardware_int
 
         std::unique_ptr<Motor> motor;
         // Create the corrsponding motor type for the joint
-        if (motorType.compare("iCL") == 0) {
-            motor = std::make_unique<Motor>(rs485, deviceID, startingPos);
-        } else if (motorType.compare("Servo57C") == 0) {
+        if (motorType.compare(ICL_MOTOR) == 0) {
+            motor = std::make_unique<ICLStepper>(rs485, deviceID, startingPos);
+        } else if (motorType.compare(SERVO57C_MOTOR) == 0) {
             motor = std::make_unique<Servo57C>(rs485, deviceID, startingPos);
         } else if (motorType.compare("none") == 0) {
             motor = std::make_unique<Motor>(rs485, deviceID, startingPos);
@@ -205,11 +206,16 @@ std::vector<hardware_interface::CommandInterface> ArmSystemHardware::export_comm
 
 hardware_interface::CallbackReturn ArmSystemHardware::on_configure(const rclcpp_lifecycle::State &previous_state) {
     (void)previous_state;
-    if (rs485->connect()) {
-        return hardware_interface::CallbackReturn::SUCCESS;
-    } else {
+    if (!rs485->connect()) {
         return hardware_interface::CallbackReturn::FAILURE; // Set to success to ignore serial port
     }
+
+    for (auto const &motor : motors) {
+        motor.second->configure();
+        RCLCPP_INFO(rclcpp::get_logger("ArmController"), "Joint '%s' configured", motor.first.c_str());
+    }
+
+    return hardware_interface::CallbackReturn::SUCCESS;
 }
 
 hardware_interface::CallbackReturn ArmSystemHardware::on_cleanup(const rclcpp_lifecycle::State &previous_state) {
