@@ -81,6 +81,7 @@ hardware_interface::CallbackReturn ArmSystemHardware::on_init(const hardware_int
 
     if (parseParameters(info.hardware_parameters, CommunicationParams, "RS485 communication") !=
         hardware_interface::CallbackReturn::SUCCESS) {
+
         return hardware_interface::CallbackReturn::ERROR;
     }
 
@@ -208,7 +209,12 @@ hardware_interface::CallbackReturn ArmSystemHardware::on_configure(const rclcpp_
     if (rs485->connect()) {
         return hardware_interface::CallbackReturn::SUCCESS;
     } else {
-        return hardware_interface::CallbackReturn::FAILURE; // Set to success to ignore serial port
+
+        // FIXME THIS IS TEMPORARY
+
+        RCLCPP_WARN(rclcpp::get_logger("ArmController"), "ELECTING TO IGNORE THE FACT SERIAL BROKE");
+        return hardware_interface::CallbackReturn::SUCCESS;
+        // return hardware_interface::CallbackReturn::FAILURE; // Set to success to ignore serial port
     }
 }
 
