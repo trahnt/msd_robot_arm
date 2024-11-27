@@ -54,9 +54,9 @@ def generate_launch_description():
 
 
     # will prob fail but idc about rviz config file
-    rviz_config_file = PathJoinSubstitution(
-        [FindPackageShare("marge"), "r6bot/rviz", "view_robot.rviz"]
-    )
+    # rviz_config_file = PathJoinSubstitution(
+        # [FindPackageShare("marge"), "r6bot/rviz", "view_robot.rviz"]
+    # )
 
 
     controller_manager = Node(
@@ -97,7 +97,7 @@ def generate_launch_description():
         executable="rviz2",
         name="rviz2",
         output="log",
-        arguments=["-d", rviz_config_file],
+        # arguments=["-d", rviz_config_file],
         condition=IfCondition(gui),
     )
 
