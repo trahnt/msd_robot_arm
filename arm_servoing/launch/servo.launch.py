@@ -35,7 +35,7 @@ def load_yaml(package_name, file_path):
 def generate_launch_description():
     moveit_config = (
         MoveItConfigsBuilder(robot_name="arm_end_effector", package_name="arm_moveit_config")
-        .robot_description(file_path="config/arm_end_effector.urdf.xacro")
+        .robot_description(file_path="config/arm_final.urdf.xacro")
         .to_moveit_configs()  # makes it return a moveit config
     )
 
@@ -87,7 +87,7 @@ def generate_launch_description():
     arm_controller_spawner = Node(
         package="controller_manager",
         executable="spawner",
-        arguments=["arm_planning_group_controller", "-c", "/controller_manager"],
+        arguments=["arm_controller", "-c", "/controller_manager"],
     )
 
     # Launch as much as possible in components
