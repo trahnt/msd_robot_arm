@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
-project(arm_moveit_config)
+project(arm_moveit_config_old)
 
 find_package(ament_cmake REQUIRED)
 
