@@ -20,7 +20,7 @@ namespace marge {
         // Make a node and cache it
         //  This is literally a RQT node, like a node node
         // FIXME this is a typing issue
-        margeNode_ = std::make_shared<rclcpp::Node>(Marge());
+        // margeNode_ = std::make_shared<rclcpp::Node>(Marge());
         // RCLCPP_INFO(margeNode_.get_logger(), "Marge is on the couch!");
         
 
