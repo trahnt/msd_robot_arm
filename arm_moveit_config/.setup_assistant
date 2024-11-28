@@ -1,0 +1,27 @@
+moveit_setup_assistant_config:
+  urdf:
+    package: sw_arm_desc
+    relative_path: urdf/arm_final_sim.urdf
+  srdf:
+    relative_path: config/arm_final.srdf
+  package_settings:
+    author_name: Ben LaGreca
+    author_email: benlagreca02@gmail.com
+    generated_timestamp: 1732812949
+  control_xacro:
+    command:
+      - position
+      - velocity
+    state:
+      - position
+      - velocity
+  modified_urdf:
+    xacros:
+      - control_xacro
+  control_xacro:
+    command:
+      - position
+      - velocity
+    state:
+      - position
+      - velocity
