@@ -13,13 +13,15 @@
     </visual>
 </link>
 
-<joint name="world_to_link_zero" type="fixed">
+
+<joint name="world_to_link_0" type="fixed">
     <origin xyz="0 0 0.001" rpy="0 0 0" />
     <parent link="world"/>
     <child link="link_0" />
 </joint>
-  <link
-    name="link_0">
+
+
+  <link name="link_0">
     <inertial>
       <origin
         xyz="-0.180605048243714 0.00295451246969466 0.0297095481548557"
@@ -58,8 +60,9 @@
       </geometry>
     </collision>
   </link>
-  <link
-    name="link_1">
+
+
+  <link name="link_1">
     <inertial>
       <origin
         xyz="0.0194245734955692 5.99072644508827E-05 0.0283706363295282"
@@ -98,9 +101,9 @@
       </geometry>
     </collision>
   </link>
-  <joint
-    name="joint_1"
-    type="revolute">
+
+
+  <joint name="joint_1" type="revolute">
     <origin
       xyz="-0.0028572 0.0017056 0.032262"
       rpy="0 0 0" />
@@ -111,13 +114,14 @@
     <axis
       xyz="0 0 1" />
     <limit
-      lower="0"
-      upper="0"
-      effort="0"
-      velocity="0" />
+      lower="-1.52"
+      upper="1.52"
+      effort="1000.0"
+      velocity="1000.0" />
   </joint>
-  <link
-    name="link_2">
+
+
+  <link name="link_2">
     <inertial>
       <origin
         xyz="0.0523793392761612 0.00270489365537457 -0.00972303414959141"
@@ -156,6 +160,8 @@
       </geometry>
     </collision>
   </link>
+
+
   <joint
     name="joint_2"
     type="revolute">
@@ -169,10 +175,10 @@
     <axis
       xyz="0 1 0" />
     <limit
-      lower="0"
+      lower="-1.8"
       upper="0"
-      effort="0"
-      velocity="0" />
+      effort="1000.0"
+      velocity="1000.0" />
   </joint>
   <link
     name="link_3">
@@ -214,6 +220,8 @@
       </geometry>
     </collision>
   </link>
+
+
   <joint
     name="joint_3"
     type="revolute">
@@ -227,13 +235,14 @@
     <axis
       xyz="0 1 0" />
     <limit
-      lower="0"
-      upper="0"
-      effort="0"
-      velocity="0" />
+      lower="-0.75"
+      upper="2.59"
+      effort="1000.0"
+      velocity="1000.0" />
   </joint>
-  <link
-    name="link_4">
+
+
+  <link name="link_4">
     <inertial>
       <origin
         xyz="0.0900794847970422 0.0101606893167193 0.0388418307803346"
@@ -272,6 +281,8 @@
       </geometry>
     </collision>
   </link>
+
+
   <joint
     name="joint_4"
     type="revolute">
@@ -285,13 +296,14 @@
     <axis
       xyz="-1 0 0" />
     <limit
-      lower="0"
-      upper="0"
-      effort="0"
-      velocity="0" />
+      lower="-2.0"
+      upper="3.0"
+      effort="1000.0"
+      velocity="1000.0" />
   </joint>
-  <link
-    name="link_5">
+
+
+  <link name="link_5">
     <inertial>
       <origin
         xyz="0.0391563547714087 -0.0174893256425382 0.0177611967562424"
@@ -330,8 +342,9 @@
       </geometry>
     </collision>
   </link>
-  <joint
-    name="joint_5"
+
+
+  <joint name="joint_5"
     type="revolute">
     <origin
       xyz="0.093616 -0.071284 0.041557"
@@ -343,13 +356,14 @@
     <axis
       xyz="0 -1 0" />
     <limit
-      lower="0"
-      upper="0"
-      effort="0"
-      velocity="0" />
+      lower="-1.084"
+      upper="1.0"
+      effort="1000.0"
+      velocity="1000.0"/>
   </joint>
-  <link
-    name="link_6">
+
+
+  <link name="link_6">
     <inertial>
       <origin
         xyz="0.137354413921888 -1.55107108293362E-06 2.87986778036986E-05"
@@ -388,6 +402,8 @@
       </geometry>
     </collision>
   </link>
+
+
   <joint
     name="joint_6"
     type="revolute">
@@ -401,9 +417,9 @@
     <axis
       xyz="1 0 0" />
     <limit
-      lower="0"
-      upper="0"
-      effort="0"
-      velocity="0" />
+      lower="-1.52"
+      upper="1.52"
+      effort="1000.0"
+      velocity="1000.0" />
   </joint>
 </robot>
