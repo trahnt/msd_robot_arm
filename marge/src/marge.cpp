@@ -2,6 +2,9 @@
 
 // #include <iostream>
 
+
+using config_type = controller_interface::interface_configuration_type;
+
 namespace marge {
 
 
@@ -41,12 +44,48 @@ namespace marge {
         // rclcpp::shutdown();
         // nodeThread_.join();
         // RCLCPP_INFO(margeNode_.get_logger(), "Thread stopped and marge left"); 
+        return CallbackReturn::SUCCESS;
     }
 
     
-    controller_interface::InterfaceConfiguration Marge::command_interface_configuration() const {}
-    controller_interface::InterfaceConfiguration Marge::state_interface_configuration() const {}
-    controller_interface::return_type Marge::update(const rclcpp::Time & time, const rclcpp::Duration & period){}
+    controller_interface::InterfaceConfiguration Marge::command_interface_configuration() const {
+        //return CallbackReturn::SUCCESS;
+        controller_interface::InterfaceConfiguration conf = {config_type::INDIVIDUAL, {}};
+
+        // Copied from example7
+        /*
+        conf.names.reserve(joint_names_.size() * state_interface_types_.size());
+        for (const auto & joint_name : joint_names_) {
+            for (const auto & interface_type : state_interface_types_) {
+              conf.names.push_back(joint_name + "/" + interface_type);
+            }
+        }
+        */
+
+        return conf;
+    }
+
+    controller_interface::InterfaceConfiguration Marge::state_interface_configuration() const {
+    
+        controller_interface::InterfaceConfiguration conf = {config_type::INDIVIDUAL, {}};
+
+        /*
+        conf.names.reserve(joint_names_.size() * state_interface_types_.size());
+        for (const auto & joint_name : joint_names_) {
+            for (const auto & interface_type : state_interface_types_)
+            {
+              conf.names.push_back(joint_name + "/" + interface_type);
+            }
+        }
+        */
+
+        return conf;
+
+    }
+
+    controller_interface::return_type Marge::update(const rclcpp::Time & time, const rclcpp::Duration & period){
+        return controller_interface::return_type::OK;
+    }
 
 
 
