@@ -67,10 +67,9 @@ namespace marge {
         controller_interface::InterfaceConfiguration conf = {config_type::INDIVIDUAL, {}};
 
         // Copied from example7
-
-        // FIXME
-        // This is probably where we read from the yaml, but I'm not gonna worry
-        // about htat *yet*
+        
+        // NOT GONNA LIE this kinda just... worked
+        // first ever for ROS 
         conf.names.reserve(joint_names_.size() * state_interface_types_.size());
         for (const auto & joint_name : joint_names_) {
             for (const auto & interface_type : state_interface_types_) {
@@ -88,7 +87,6 @@ namespace marge {
         // FIXME
         // This is probably where we read from the yaml, but I'm not gonna worry
         // about htat *yet*
-        /*
         conf.names.reserve(joint_names_.size() * state_interface_types_.size());
         for (const auto & joint_name : joint_names_) {
             for (const auto & interface_type : state_interface_types_)
@@ -96,19 +94,16 @@ namespace marge {
               conf.names.push_back(joint_name + "/" + interface_type);
             }
         }
-        */
 
         return conf;
     }
 
     controller_interface::return_type Marge::update(const rclcpp::Time & time, const rclcpp::Duration & period){
+        // this is what runs continuously over and over I think
         return controller_interface::return_type::OK;
     }
-
-
-
-
 };
+
 
 #include "pluginlib/class_list_macros.hpp"
 PLUGINLIB_EXPORT_CLASS(marge::Marge, controller_interface::ControllerInterface)
