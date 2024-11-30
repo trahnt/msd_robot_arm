@@ -30,6 +30,7 @@ add_library(
   src/ArmSystem.cpp
   src/Motor.cpp
   src/Servo57C.cpp
+  src/Servo42D.cpp
   src/ICLStepper.cpp
   src/Communication/RS485.cpp
   src/Communication/ModbusDevice.cpp

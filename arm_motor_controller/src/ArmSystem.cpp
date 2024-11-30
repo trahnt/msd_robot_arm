@@ -12,6 +12,7 @@
 #include "arm_motor_controller/Communication/RS485.hpp"
 #include "arm_motor_controller/ICLStepper.hpp"
 #include "arm_motor_controller/Motor.hpp"
+#include "arm_motor_controller/Servo42D.hpp"
 #include "arm_motor_controller/Servo57C.hpp"
 
 namespace {
@@ -23,16 +24,15 @@ enum class ParameterType { Int, Double, String, Bool };
  */
 hardware_interface::CallbackReturn
 parseParameters(const std::unordered_map<std::string, std::string> parameters,
-                const std::map<std::string, std::tuple<ParameterType, std::any, std::any>> parameterMap,
-                std::string logPrefix) {
+                const std::map<std::string, std::tuple<ParameterType, std::any, std::any>> parameterMap, std::string logPrefix) {
     for (const auto &param : parameterMap) {
         // Find parameter
         auto search = parameters.find(param.first);
         if (search == parameters.end()) {
 
             if (std::get<2>(param.second).has_value()) { // No value, use default
-                RCLCPP_WARN(rclcpp::get_logger("ArmController"), "%s missing parameter \"%s\", using default",
-                            logPrefix.c_str(), param.first.c_str());
+                RCLCPP_WARN(rclcpp::get_logger("ArmController"), "%s missing parameter \"%s\", using default", logPrefix.c_str(),
+                            param.first.c_str());
                 auto val = std::get<2>(param.second);
                 switch (std::get<0>(param.second)) {
                 case ParameterType::Int:
@@ -135,15 +135,14 @@ hardware_interface::CallbackReturn ArmSystemHardware::on_init(const hardware_int
         // Do som config error checking before initializing a motor
         // Command interface checking
         if (joint.command_interfaces.size() != 3) {
-            RCLCPP_FATAL(rclcpp::get_logger("ArmController"),
-                         "Joint '%s' has %zu command interfaces found. 2 expected.", joint.name.c_str(),
-                         joint.command_interfaces.size());
+            RCLCPP_FATAL(rclcpp::get_logger("ArmController"), "Joint '%s' has %zu command interfaces found. 2 expected.",
+                         joint.name.c_str(), joint.command_interfaces.size());
             return hardware_interface::CallbackReturn::ERROR;
         }
         if (joint.command_interfaces[0].name != hardware_interface::HW_IF_POSITION ||
             joint.command_interfaces[1].name != hardware_interface::HW_IF_VELOCITY) {
-            RCLCPP_FATAL(rclcpp::get_logger("ArmController"),
-                         "Joint '%s' must have position and velocity command interface", joint.name.c_str());
+            RCLCPP_FATAL(rclcpp::get_logger("ArmController"), "Joint '%s' must have position and velocity command interface",
+                         joint.name.c_str());
             return hardware_interface::CallbackReturn::ERROR;
         }
 
@@ -155,8 +154,8 @@ hardware_interface::CallbackReturn ArmSystemHardware::on_init(const hardware_int
         }
         if (joint.state_interfaces[0].name != hardware_interface::HW_IF_POSITION ||
             joint.state_interfaces[1].name != hardware_interface::HW_IF_VELOCITY) {
-            RCLCPP_FATAL(rclcpp::get_logger("ArmController"),
-                         "Joint '%s' must have position and velocity state interface", joint.name.c_str());
+            RCLCPP_FATAL(rclcpp::get_logger("ArmController"), "Joint '%s' must have position and velocity state interface",
+                         joint.name.c_str());
             return hardware_interface::CallbackReturn::ERROR;
         }
 
@@ -196,6 +195,8 @@ hardware_interface::CallbackReturn ArmSystemHardware::on_init(const hardware_int
             motor = std::make_unique<ICLStepper>(rs485, deviceID, isReversed);
         } else if (motorType.compare(SERVO57C_MOTOR) == 0) {
             motor = std::make_unique<Servo57C>(rs485, deviceID, isReversed);
+        } else if (motorType.compare(SERVO42D_MOTOR) == 0) {
+            motor = std::make_unique<Servo42D>(rs485, deviceID, isReversed);
         } else if (motorType.compare("none") == 0) {
             motor = std::make_unique<Motor>(rs485, deviceID, isReversed);
         } else { // Invalid type
@@ -292,8 +293,8 @@ hardware_interface::CallbackReturn ArmSystemHardware::on_shutdown(const rclcpp_l
 hardware_interface::return_type ArmSystemHardware::read(const rclcpp::Time &time, const rclcpp::Duration &period) {
     static double lastupdate = 0.0;
     if (time.seconds() - lastupdate > 1) {
-        RCLCPP_INFO(rclcpp::get_logger("ArmController"), "Got read update! Current time: %f, Period: %f",
-                    time.seconds(), period.seconds());
+        RCLCPP_INFO(rclcpp::get_logger("ArmController"), "Got read update! Current time: %f, Period: %f", time.seconds(),
+                    period.seconds());
         lastupdate = time.seconds();
     }
 
@@ -306,8 +307,8 @@ hardware_interface::return_type ArmSystemHardware::read(const rclcpp::Time &time
 hardware_interface::return_type ArmSystemHardware::write(const rclcpp::Time &time, const rclcpp::Duration &period) {
     static double lastupdate = 0.0;
     if (time.seconds() - lastupdate > 1) {
-        RCLCPP_INFO(rclcpp::get_logger("ArmController"), "Got write update! Current time: %f, Period: %f",
-                    time.seconds(), period.seconds());
+        RCLCPP_INFO(rclcpp::get_logger("ArmController"), "Got write update! Current time: %f, Period: %f", time.seconds(),
+                    period.seconds());
         lastupdate = time.seconds();
     }
 

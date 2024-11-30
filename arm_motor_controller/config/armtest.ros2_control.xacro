@@ -45,7 +45,8 @@
                 <state_interface name="home"/>
             </joint>
             <joint name="joint_3">
-                <param name="type">iCL</param>
+                <param name="type">none</param>
+                <!-- <param name="type">iCL</param> -->
                 <param name="id">3</param>
                 <param name="min">-32000</param>
                 <param name="max">0</param>
@@ -93,13 +94,13 @@
                 <state_interface name="home"/>
             </joint>
             <joint name="joint_6">
-                <!-- <param name="type">Servo42C</param> -->
+                <param name="type">Servo42D</param>
                 <!-- <param name="type">Servo57C</param> -->
-                <param name="type">none</param>
+                <!-- <param name="type">none</param> -->
                 <param name="id">6</param>
                 <param name="min">-288000</param>
                 <param name="max">288000</param>
-                <param name="rpm">1000</param>
+                <param name="rpm">2400</param>
                 <param name="homePosition">0</param>
                 <command_interface name="position"/>
                 <command_interface name="velocity"/>
@@ -111,7 +112,7 @@
                 <state_interface name="home"/>
             </joint>
             <joint name="grip_joint">
-                <!-- <param name="type">Servo42C</param> -->
+                <!-- <param name="type">Servo42D</param> -->
                 <param name="type">none</param>
                 <param name="id">7</param>
                 <param name="min">0</param>
