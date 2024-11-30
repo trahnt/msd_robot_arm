@@ -117,6 +117,9 @@ def generate_launch_description():
     # )
 
 
+    # I think something is broken here?
+    # i can get ithis going just fine by doing 
+    # `ros2 control load_controller marge_spawner` manually
     marge_spawner = Node(
         package="controller_manager",
         executable="spawner",
@@ -154,10 +157,10 @@ def generate_launch_description():
         robot_state_pub_node,
         controller_manager,
         static_tf,
-        joint_state_broadcaster_spawner,
+        # joint_state_broadcaster_spawner,
         # spawn_marge_after_cm,
-        marge_spawner,
-        # delay_joint_state_broadcaster_after_marge_spawner,
+        # marge_spawner,
+        delay_joint_state_broadcaster_after_marge_spawner,
         delay_rviz_after_joint_state_broadcaster_spawner,
     ]
 

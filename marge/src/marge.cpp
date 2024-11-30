@@ -7,29 +7,16 @@ namespace marge {
 
     Marge::Marge(){ 
         // std::cout << "CONSTRUCTOR" << std::endl;
-        // RCLCPP_INFO(this->get_node()->get_logger(), "CONSTRUCTOR");
     };
 
 
     CallbackReturn Marge::on_init() {
 
-// rclcpp::init();
-
-
-        // Do some stuff
-        // std::cout << "HELLO WORLD, MARGE HAS BEEN INIT" << std::endl;
-
-        
-        // Make a node and cache it
-        //  This is literally a RQT node, like a node node
-        // FIXME this is a typing issue
-        // margeNode_ = std::make_shared<rclcpp::Node>(MargeNode());
-
+        RCLCPP_INFO(this->get_node()->get_logger(), "CONSTRUCTOR");
 
         // std::cout << "ON INIT" << std::endl;
         //RCLCPP_INFO(this->get_node()->get_logger(), "ON INIT");
-
-        
+ 
         //  need to spin, but spin makes it hang there, and we can't have that!
         // lambda thread yummy!
         
@@ -40,7 +27,6 @@ namespace marge {
         */
 
         // RCLCPP_INFO(margeNode_.get_logger(), "Node thread started!");
-
 
         // ROS node garbage here
 
