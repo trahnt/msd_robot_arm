@@ -1,11 +1,14 @@
 #include "marge/marge.hpp"
 
-#include <iostream>
+// #include <iostream>
 
 namespace marge {
 
 
-    Marge::Marge(){};
+    Marge::Marge(){ 
+        // std::cout << "CONSTRUCTOR" << std::endl;
+        // RCLCPP_INFO(this->get_node()->get_logger(), "CONSTRUCTOR");
+    };
 
 
     CallbackReturn Marge::on_init() {
@@ -14,22 +17,28 @@ namespace marge {
 
 
         // Do some stuff
-        std::cout << "HELLO WORLD, MARGE HAS BEEN INIT" << std::endl;
+        // std::cout << "HELLO WORLD, MARGE HAS BEEN INIT" << std::endl;
 
         
         // Make a node and cache it
         //  This is literally a RQT node, like a node node
         // FIXME this is a typing issue
-        margeNode_ = std::make_shared<rclcpp::Node>(Marge());
-        // RCLCPP_INFO(margeNode_.get_logger(), "Marge is on the couch!");
+        // margeNode_ = std::make_shared<rclcpp::Node>(MargeNode());
+
+
+        // std::cout << "ON INIT" << std::endl;
+        //RCLCPP_INFO(this->get_node()->get_logger(), "ON INIT");
+
         
-
-
         //  need to spin, but spin makes it hang there, and we can't have that!
         // lambda thread yummy!
+        
+        /*
         nodeThread_ = std::thread([this](){
                 rclcpp::spin(margeNode_);
         });
+        */
+
         // RCLCPP_INFO(margeNode_.get_logger(), "Node thread started!");
 
 
@@ -43,13 +52,20 @@ namespace marge {
     }
 
     controller_interface::CallbackReturn Marge::on_deactivate(const rclcpp_lifecycle::State & previous_state){
-        rclcpp::shutdown();
-        nodeThread_.join();
+        // rclcpp::shutdown();
+        // nodeThread_.join();
         // RCLCPP_INFO(margeNode_.get_logger(), "Thread stopped and marge left"); 
     }
 
-
     
+    controller_interface::InterfaceConfiguration Marge::command_interface_configuration() const {}
+    controller_interface::InterfaceConfiguration Marge::state_interface_configuration() const {}
+    controller_interface::return_type Marge::update(const rclcpp::Time & time, const rclcpp::Duration & period){}
+
+
 
 
 };
+
+#include "pluginlib/class_list_macros.hpp"
+PLUGINLIB_EXPORT_CLASS(marge::Marge, controller_interface::ControllerInterface)

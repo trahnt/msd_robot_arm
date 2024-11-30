@@ -38,12 +38,17 @@ def generate_launch_description():
     robot_description_content = Command( [
             PathJoinSubstitution([FindExecutable(name="xacro")]),
             " ",
-            PathJoinSubstitution([FindPackageShare("arm_motor_controller"), "config", "armtest.urdf.xacro"])
+            PathJoinSubstitution([
+                FindPackageShare("arm_motor_controller"),
+                "config",
+                "armtest.urdf.xacro"
+            ])
         ]
     )
 
     robot_description = {"robot_description": robot_description_content}
 
+    # The yaml of the ros2_control controller yaml
     robot_controllers = PathJoinSubstitution(
         [
             FindPackageShare("marge"),
@@ -52,12 +57,10 @@ def generate_launch_description():
         ]
     )
 
-
     # will prob fail but idc about rviz config file
     # rviz_config_file = PathJoinSubstitution(
         # [FindPackageShare("marge"), "r6bot/rviz", "view_robot.rviz"]
     # )
-
 
     controller_manager = Node(
         package="controller_manager",
@@ -113,6 +116,7 @@ def generate_launch_description():
         # arguments=["marge_controller", "--param-file", robot_controllers],
     # )
 
+
     marge_spawner = Node(
         package="controller_manager",
         executable="spawner",
@@ -150,8 +154,10 @@ def generate_launch_description():
         robot_state_pub_node,
         controller_manager,
         static_tf,
-        spawn_marge_after_cm,
-        delay_joint_state_broadcaster_after_marge_spawner,
+        joint_state_broadcaster_spawner,
+        # spawn_marge_after_cm,
+        marge_spawner,
+        # delay_joint_state_broadcaster_after_marge_spawner,
         delay_rviz_after_joint_state_broadcaster_spawner,
     ]
 

@@ -6,18 +6,20 @@
 
 #include "controller_interface/controller_interface.hpp"
 
-using std::placeholders::_1;
+// using std::placeholders::_1;
 
 namespace marge {
 
 using CallbackReturn = rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
 
 // The node that gets made inside the controller interface
+
+/*
 class MargeNode : public rclcpp::Node{
 public:
     MargeNode(): Node("Marge"){
         subscription_ = this->create_subscription<std_msgs::msg::Bool>(
-            "home_request", 10, std::bind(&marge::MargeNode::topic_callback, this, _1));
+        "home_request", 10, std::bind(&marge::MargeNode::topic_callback, this, _1));
     }
 
 private:
@@ -27,6 +29,7 @@ private:
         RCLCPP_INFO(this->get_logger(), "Marge is ready to control homer!");
     }
 };
+*/
 
 
 
@@ -46,19 +49,17 @@ public:
     Marge();
 
     // The node, so that we can actually do ROS stuff
-    std::shared_ptr<rclcpp::Node>  margeNode_;
+    // std::shared_ptr<rclcpp::Node>  margeNode_;
     // The thread that runs the node
-    std::thread nodeThread_;
+    // std::thread nodeThread_;
 
-    rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr homingSubscriber_;
+    // rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr homingSubscriber_;
 
     CallbackReturn on_init() override;
 
     controller_interface::InterfaceConfiguration command_interface_configuration() const override;
     controller_interface::InterfaceConfiguration state_interface_configuration() const override;
     controller_interface::return_type update( const rclcpp::Time & time, const rclcpp::Duration & period) override;
-
-
 
 
     controller_interface::CallbackReturn on_deactivate(const rclcpp_lifecycle::State & previous_state) override;
