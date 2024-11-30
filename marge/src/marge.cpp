@@ -8,22 +8,40 @@ using config_type = controller_interface::interface_configuration_type;
 namespace marge {
 
 
-    Marge::Marge(){ 
-        // std::cout << "CONSTRUCTOR" << std::endl;
-    };
+    Marge::Marge(){};
 
 
     CallbackReturn Marge::on_init() {
+        // should have error handling
+        joint_names_ = auto_declare<std::vector<std::string>>("joints", joint_names_);
+        command_interface_types_ =
+            auto_declare<std::vector<std::string>>("command_interfaces", command_interface_types_);
+        state_interface_types_ =
+            auto_declare<std::vector<std::string>>("state_interfaces", state_interface_types_);
+
+        //point_interp_.positions.assign(joint_names_.size(), 0);
+        //point_interp_.velocities.assign(joint_names_.size(), 0);
+
         // This is what the example code does
-        RCLCPP_INFO(this->get_node()->get_logger(), "MARGE INITIALIZED");
+        RCLCPP_INFO(this->get_node()->get_logger(), "Marge is on the couch");
+        //  RCLCPP_INFO(this->get_node()->get_logger(), );
         return CallbackReturn::SUCCESS;
     }
+
+
+
+
 
     controller_interface::CallbackReturn Marge::on_configure(const rclcpp_lifecycle::State &) {
         // our callback lambda for what to do when we get a message
         auto callback = [this](const std::shared_ptr<std_msgs::msg::Bool> bool_msg) -> void {
-            RCLCPP_INFO(this->get_node()->get_logger(), "HOMER STOP DRINKING AND TAKE CARE OF BART");
-            std::cout<<"BRUH"<<std::endl;
+            RCLCPP_INFO(this->get_node()->get_logger(), "Marge got the home message!");
+            
+            // TODO matt
+            // This is where the homing algirhtm stuff will go.
+            // When marge gets a home_request message, this function gets ran
+
+
             // from example7
             // traj_msg_external_point_ptr_.writeFromNonRT(traj_msg);
             // new_msg_ = true;
@@ -53,14 +71,12 @@ namespace marge {
         // FIXME
         // This is probably where we read from the yaml, but I'm not gonna worry
         // about htat *yet*
-        /*
         conf.names.reserve(joint_names_.size() * state_interface_types_.size());
         for (const auto & joint_name : joint_names_) {
             for (const auto & interface_type : state_interface_types_) {
               conf.names.push_back(joint_name + "/" + interface_type);
             }
         }
-        */
 
         return conf;
     }

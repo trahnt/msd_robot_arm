@@ -46,7 +46,10 @@ public:
 
     controller_interface::CallbackReturn on_deactivate(const rclcpp_lifecycle::State & previous_state) override;
 
-private:
+protected:
+    std::vector<std::string> joint_names_;
+    std::vector<std::string> command_interface_types_;
+    std::vector<std::string> state_interface_types_;
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr home_message_subscriber_;
 
 };
