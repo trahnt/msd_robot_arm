@@ -14,45 +14,45 @@ namespace marge {
 
 
     CallbackReturn Marge::on_init() {
-
-        RCLCPP_INFO(this->get_node()->get_logger(), "CONSTRUCTOR");
-
-        // std::cout << "ON INIT" << std::endl;
-        //RCLCPP_INFO(this->get_node()->get_logger(), "ON INIT");
- 
-        //  need to spin, but spin makes it hang there, and we can't have that!
-        // lambda thread yummy!
-        
-        /*
-        nodeThread_ = std::thread([this](){
-                rclcpp::spin(margeNode_);
-        });
-        */
-
-        // RCLCPP_INFO(margeNode_.get_logger(), "Node thread started!");
-
-        // ROS node garbage here
-
-        // This is what tutorial says to return but...
-        // return controller_interface::return_type::OK; 
-
         // This is what the example code does
+        RCLCPP_INFO(this->get_node()->get_logger(), "MARGE INITIALIZED");
         return CallbackReturn::SUCCESS;
     }
+
+    controller_interface::CallbackReturn Marge::on_configure(const rclcpp_lifecycle::State &) {
+        // our callback lambda for what to do when we get a message
+        auto callback = [this](const std::shared_ptr<std_msgs::msg::Bool> bool_msg) -> void {
+            RCLCPP_INFO(this->get_node()->get_logger(), "HOMER STOP DRINKING AND TAKE CARE OF BART");
+            std::cout<<"BRUH"<<std::endl;
+            // from example7
+            // traj_msg_external_point_ptr_.writeFromNonRT(traj_msg);
+            // new_msg_ = true;
+        };
+
+        home_message_subscriber_ = get_node()->create_subscription<std_msgs::msg::Bool>(
+        "/home_request", rclcpp::SystemDefaultsQoS(), callback);
+
+        return CallbackReturn::SUCCESS;
+    }
+
+
 
     controller_interface::CallbackReturn Marge::on_deactivate(const rclcpp_lifecycle::State & previous_state){
         // rclcpp::shutdown();
         // nodeThread_.join();
-        // RCLCPP_INFO(margeNode_.get_logger(), "Thread stopped and marge left"); 
+        RCLCPP_INFO(this->get_node()->get_logger(), "MARGE DEACTIVATED"); 
         return CallbackReturn::SUCCESS;
     }
-
-    
+ 
     controller_interface::InterfaceConfiguration Marge::command_interface_configuration() const {
         //return CallbackReturn::SUCCESS;
         controller_interface::InterfaceConfiguration conf = {config_type::INDIVIDUAL, {}};
 
         // Copied from example7
+
+        // FIXME
+        // This is probably where we read from the yaml, but I'm not gonna worry
+        // about htat *yet*
         /*
         conf.names.reserve(joint_names_.size() * state_interface_types_.size());
         for (const auto & joint_name : joint_names_) {
@@ -69,6 +69,9 @@ namespace marge {
     
         controller_interface::InterfaceConfiguration conf = {config_type::INDIVIDUAL, {}};
 
+        // FIXME
+        // This is probably where we read from the yaml, but I'm not gonna worry
+        // about htat *yet*
         /*
         conf.names.reserve(joint_names_.size() * state_interface_types_.size());
         for (const auto & joint_name : joint_names_) {
@@ -80,7 +83,6 @@ namespace marge {
         */
 
         return conf;
-
     }
 
     controller_interface::return_type Marge::update(const rclcpp::Time & time, const rclcpp::Duration & period){
