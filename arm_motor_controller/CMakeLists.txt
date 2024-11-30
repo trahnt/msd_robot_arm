@@ -32,6 +32,7 @@ add_library(
   src/Servo57C.cpp
   src/ICLStepper.cpp
   src/Communication/RS485.cpp
+  src/Communication/ModbusDevice.cpp
 )
 target_compile_features(arm_motor_controller PUBLIC cxx_std_17)
 target_include_directories(arm_motor_controller PUBLIC

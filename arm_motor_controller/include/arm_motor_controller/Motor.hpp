@@ -19,7 +19,7 @@ constexpr char HW_IF_HOME[] = "home";
 
 class Motor {
 public:
-    Motor(std::shared_ptr<RS485> rs485, uint32_t id, double startingPos = 0);
+    Motor(std::shared_ptr<RS485> rs485, uint8_t id, double startingPos = 0);
 
     void setJointLimits(double jointMin, double jointMax) {
         jointLimits[0] = jointMin;
@@ -32,6 +32,8 @@ public:
     };
 
     void setMotorSpeedScale(double speed) { scaledSpeed = speed; };
+
+    virtual void setMotorHome(uint32_t speed, uint32_t config) { (void)speed, (void)config; };
 
     virtual int configure() { return 0; };
 
@@ -60,7 +62,7 @@ public:
 protected:
     std::shared_ptr<RS485> rs485;
 
-    uint32_t id;
+    uint8_t id;
 
     double jointLimits[2] = {0.0, 1.0}; // ROS joint limits (min, max)
     double motorLimits[2] = {0.0, 1.0}; // Motor physical limits (min, max)
@@ -76,6 +78,8 @@ protected:
 
     double motorPos;
     double motorVel;
+
+    uint32_t errorCounts = 0;
 
 private:
     double lastupdate = 0.0;

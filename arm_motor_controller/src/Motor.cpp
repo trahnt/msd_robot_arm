@@ -5,7 +5,7 @@
 
 namespace arm_motor_controller {
 
-Motor::Motor(std::shared_ptr<RS485> rs485, uint32_t id, double startingPos)
+Motor::Motor(std::shared_ptr<RS485> rs485, uint8_t id, double startingPos)
     : rs485(rs485), id(id), rosCurrentPos(startingPos) {
     RCLCPP_INFO(rclcpp::get_logger("MotorState"), "Motor %d created", id);
     rosTargetPos = startingPos;
@@ -19,6 +19,8 @@ int Motor::enable() {
 }
 
 int Motor::disable(bool isEmergency) {
+    (void)isEmergency;
+
     RCLCPP_INFO(rclcpp::get_logger("MotorState"), "Disabling motor %d at position, current %.4f, target %.4f", id,
                 rosCurrentPos, rosTargetPos);
     return 0;
@@ -43,6 +45,7 @@ int Motor::exportCommand(std::vector<hardware_interface::CommandInterface> &comm
 }
 
 int Motor::read(double time, double period) {
+    (void)time, (void)period;
     // RCLCPP_INFO(rclcpp::get_logger("MotorState"), "Motor %d read update", id);
     rosCurrentPos = motorPos2Radians(motorPos);
     rosCurrentVel = motorVel2Radians(motorVel);
@@ -57,6 +60,7 @@ int Motor::read(double time, double period) {
 };
 
 int Motor::write(double time, double period) {
+    (void)time, (void)period;
     motorPos = radians2MotorPos(rosTargetPos);
     motorVel = radians2MotorVel(rosTargetVel);
 
