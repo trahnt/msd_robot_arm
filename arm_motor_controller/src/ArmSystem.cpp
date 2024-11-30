@@ -255,8 +255,10 @@ hardware_interface::CallbackReturn ArmSystemHardware::on_shutdown(const rclcpp_l
 hardware_interface::return_type ArmSystemHardware::read(const rclcpp::Time &time, const rclcpp::Duration &period) {
     static double lastupdate = 0.0;
     if (time.seconds() - lastupdate > 1) {
+        /*
         RCLCPP_INFO(rclcpp::get_logger("ArmController"), "Got read update! Current time: %f, Period: %f",
                     time.seconds(), period.seconds());
+                    */
         lastupdate = time.seconds();
     }
 
@@ -269,8 +271,10 @@ hardware_interface::return_type ArmSystemHardware::read(const rclcpp::Time &time
 hardware_interface::return_type ArmSystemHardware::write(const rclcpp::Time &time, const rclcpp::Duration &period) {
     static double lastupdate = 0.0;
     if (time.seconds() - lastupdate > 1) {
+        /*
         RCLCPP_INFO(rclcpp::get_logger("ArmController"), "Got write update! Current time: %f, Period: %f",
                     time.seconds(), period.seconds());
+                    */
         lastupdate = time.seconds();
     }
 
