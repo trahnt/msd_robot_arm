@@ -5,10 +5,9 @@
 
 namespace arm_motor_controller {
 
-Motor::Motor(std::shared_ptr<RS485> rs485, uint8_t id, double startingPos)
-    : rs485(rs485), id(id), rosCurrentPos(startingPos) {
+Motor::Motor(std::shared_ptr<RS485> rs485, uint8_t id, bool isReversed) : rs485(rs485), id(id), isReversed(isReversed) {
     RCLCPP_INFO(rclcpp::get_logger("MotorState"), "Motor %d created", id);
-    rosTargetPos = startingPos;
+    rosTargetPos = 0.0;
     rosIsHomed = 0.0;
 };
 

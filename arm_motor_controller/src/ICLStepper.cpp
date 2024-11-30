@@ -1,40 +1,95 @@
+#include <math.h>
+
 #include "rclcpp/rclcpp.hpp"
 
 #include "arm_motor_controller/ICLStepper.hpp"
 
 namespace arm_motor_controller {
 
-ICLStepper::ICLStepper(std::shared_ptr<RS485> rs485, uint32_t id, double startingPos)
-    : Motor(rs485, id, startingPos), modbus(id, *rs485, ERROR_DECAY_RATE) {
+ICLStepper::ICLStepper(std::shared_ptr<RS485> rs485, uint32_t id, bool isReversed)
+    : Motor(rs485, id, isReversed), modbus(id, *rs485, ERROR_DECAY_RATE) {
     motorVel = 0;
-    motorPos = startingPos;
+    motorPos = 0;
 }
 
 ICLStepper::~ICLStepper() {}
 
 void ICLStepper::setMotorHome(uint32_t speed, uint32_t config) {
     homeVelocity = speed;
-    homeConfig = config;
+    homeConfig = config & 0xF;
+    isForwardLimit = config & 0x10;
 }
 
 int ICLStepper::configure() {
-    constexpr uint16_t config[2][2] = {
-        {0x0145, 0x26}, // DI1 mode (0x26 = neg sw, 0x25 = pos)
-        {0x016D, 0x0},  // Alarm (0 = shut up)
+    constexpr int CONFIG_LEN = 12;
+    uint16_t config[CONFIG_LEN][2] = {
+        {MOTOR_DIRECTION_REGISTER_ADDRESS, (uint16_t)(isReversed ? 1 : 0)},              // Positive direction(0 = CW, 1 = CCW)
+        {DIGITAL_IN1_CONFIG_REGISTER_ADDRESS, (uint16_t)(isForwardLimit ? 0x25 : 0x26)}, // DI1 mode (0x26 = neg sw, 0x25 = pos)
+        {DIGITAL_IN7_CONFIG_REGISTER_ADDRESS, 0x08},                                     // N.O Enable pin (force disable default)
+        {ALARM_CONFIG_REGISTER_ADDRESS, 0x00},                                           // Shutup Alarm
+        {HOME_REGISTER_ADDRESS_START + 0, homeConfig},                                   // Home mode
+        {HOME_REGISTER_ADDRESS_START + 1, 0x00},                                         // Home Switch Pos High?
+        {HOME_REGISTER_ADDRESS_START + 2, 0x00},                                         // Home Switch Pos Low?
+        {HOME_REGISTER_ADDRESS_START + 3, 0x00},                                         // Home Move Pos High
+        {HOME_REGISTER_ADDRESS_START + 4, 0x00},                                         // Home Move Pos Low
+        // skip 0x600F
+        {HOME_REGISTER_ADDRESS_START + 6, homeVelocity}, // Home velocity
+        {HOME_REGISTER_ADDRESS_START + 7, ACCELERATION}, // Home acc
+        {HOME_REGISTER_ADDRESS_START + 8, ACCELERATION}, // Home dec
     };
 
-    modbus.writeRegister(config[0][0], WRITE_FUNCTION_CODE, config[0][1]);
+    rclcpp::Rate rate(10);
 
-    // uint16_t test[] = {0x0000, 0x0028, 0x0000, 0x0029};
-    // RCLCPP_INFO(rclcpp::get_logger("MotorState"), "Motor %d multi-write: %d", id, writeMultiple(0x0146, 4, test));
+    // return 0;
+    // update all the config parameters of the motor if there is a deference and save them to the motor.
+    bool errorEncountered = false;
+    bool saveReg = false;
+    uint16_t resp;
+    uint16_t val;
+    uint16_t reg;
+    for (int i = 0; i < CONFIG_LEN; i++) {
+        reg = config[i][0];
+        val = config[i][1];
 
-    return 0;
+        if (modbus.readRegisters(reg, READ_FUNCTION_CODE, 1, &resp)) {
+            RCLCPP_WARN(rclcpp::get_logger("MotorState"), "Motor %d unable to read register 0x%X during config, overwriting...",
+                        id, reg);
+            resp = 0xFFFF;
+            errorEncountered = true;
+        }
+
+        rate.sleep();
+
+        if (resp != val) {
+            RCLCPP_INFO(rclcpp::get_logger("MotorState"), "Motor %d register difference at 0x%X setting to 0x%X from 0x%X", id,
+                        reg, val, resp);
+            saveReg = true;
+            if (modbus.writeRegister(reg, WRITE_FUNCTION_CODE, val)) {
+                RCLCPP_ERROR(rclcpp::get_logger("MotorState"), "Motor %d unable to set register 0x%X to 0x%X", id, reg, val);
+                errorEncountered = true;
+            }
+        }
+    }
+
+    rate.sleep();
+
+    if (saveReg) {
+        RCLCPP_WARN(rclcpp::get_logger("MotorState"), "Motor %d config differed from desired, saving...", id);
+
+        // TODO save params!
+        // if (modbus.writeRegister(CONTROL_WORD_REGISTER_ADDRESS, WRITE_FUNCTION_CODE, 0x2211)) {
+        //     RCLCPP_ERROR(rclcpp::get_logger("MotorState"), "Motor %d unable to save registers!!!", id);
+        //     errorEncountered = true;
+        // }
+    }
+
+    return errorEncountered ? -1 : 0;
 }
 
 int ICLStepper::enable() {
     Motor::enable();
 
-    move(0, 0); // Stop any movement befor enabling
+    // move(0, 0, true); // Stop any movement befor enabling
     modbus.writeRegister(ENABLE_REGISTER_ADDRESS_START, WRITE_FUNCTION_CODE, 0x01);
 
     return 0;
@@ -67,10 +122,10 @@ int ICLStepper::home() {
     return 0;
 }
 
-int ICLStepper::move(int32_t pos, uint16_t vel) {
+int ICLStepper::move(int32_t pos, uint16_t vel, bool relative) {
     // Build the Immediate Trigger message
     uint16_t movementMessage[8] = {0};
-    movementMessage[0] = PATH_MODE;
+    movementMessage[0] = PATH_MODE | (relative ? 0x40 : 0);
     movementMessage[1] = pos >> 16;
     movementMessage[2] = pos;
     movementMessage[3] = vel;
@@ -96,8 +151,7 @@ int ICLStepper::read(double time, double period) {
     if ((time - lastSecond) > 1.0) {
         lastSecond = time;
         if (errorCounts > 50) {
-            RCLCPP_ERROR(rclcpp::get_logger("MotorState"), "Unable to communicate with Motor %d! counts at %d", id,
-                         errorCounts);
+            RCLCPP_ERROR(rclcpp::get_logger("MotorState"), "Unable to communicate with Motor %d! counts at %d", id, errorCounts);
         }
     }
     // if (count < 10) {
@@ -110,8 +164,7 @@ int ICLStepper::read(double time, double period) {
     uint16_t raw[2] = {0};
     // int ret = readRegister(ENCODER_REGISTER_ADDRESS_START, 2, raw);
     if (modbus.readRegisters(ENCODER_REGISTER_ADDRESS_START, READ_FUNCTION_CODE, 2, raw)) {
-        // RCLCPP_WARN(rclcpp::get_logger("MotorState"), "Motor %d encountered and error while reading, got %d", id,
-        // ret);
+        RCLCPP_WARN(rclcpp::get_logger("MotorState"), "Motor %d encountered and error while reading", id);
         return -1;
     }
 
@@ -156,17 +209,23 @@ int ICLStepper::write(double time, double period) {
         // Only update the pos on significant change
         if (abs(pos - motorPos) < 1) {
             return 0;
+        } else if (signbit(pos - motorPos) != signbit(vel)) {
+            // Only move to position in the same direction as the velocity (Fixes weirdness from JTC)
+            return 0;
         }
+
         RCLCPP_INFO(rclcpp::get_logger("MotorState"),
-                    "Motor %d update to position %0.4f (%0.4f) with velocity %0.4f (%0.4f)", id, pos, rosTargetPos, vel,
-                    rosTargetVel);
+                    "Motor %d update to position %0.4f (%0.4f), error [%0.4f] with velocity %0.4f (%0.4f)", id, pos, rosTargetPos,
+                    rosTargetPos - rosCurrentPos, vel, rosTargetVel);
 
         uint16_t realVel = abs(vel) < 1.0 ? 1 : abs(vel);
 
-        if (!move(pos, realVel)) {
-            motorVel = realVel;
-            motorPos = trunc(pos);
+        if (move(pos, realVel)) {
+            return -1;
         }
+
+        motorVel = realVel;
+        motorPos = trunc(pos);
 
         // std::stringstream ss;
         // ss << std::hex << std::setfill('0');

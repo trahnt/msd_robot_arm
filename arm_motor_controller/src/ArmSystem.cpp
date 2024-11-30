@@ -1,6 +1,7 @@
 #include <any>
 #include <map>
 #include <string>
+#include <tuple>
 
 #include "joint_limits/joint_limits.hpp"
 #include "joint_limits/joint_limits_rosparam.hpp"
@@ -15,31 +16,61 @@
 
 namespace {
 
-enum class ParameterType { Int, Double, String };
+enum class ParameterType { Int, Double, String, Bool };
 
 /**
  * Parses a map of parameters to the individual variables and convert it to the correct type
  */
 hardware_interface::CallbackReturn
 parseParameters(const std::unordered_map<std::string, std::string> parameters,
-                const std::map<std::string, std::pair<ParameterType, std::any>> parameterMap, std::string logPrefix) {
+                const std::map<std::string, std::tuple<ParameterType, std::any, std::any>> parameterMap,
+                std::string logPrefix) {
     for (const auto &param : parameterMap) {
+        // Find parameter
         auto search = parameters.find(param.first);
         if (search == parameters.end()) {
-            RCLCPP_FATAL(rclcpp::get_logger("ArmController"), "%s missing parameter \"%s\"", logPrefix.c_str(),
-                         param.first.c_str());
-            return hardware_interface::CallbackReturn::ERROR;
+
+            if (std::get<2>(param.second).has_value()) { // No value, use default
+                RCLCPP_WARN(rclcpp::get_logger("ArmController"), "%s missing parameter \"%s\", using default",
+                            logPrefix.c_str(), param.first.c_str());
+                auto val = std::get<2>(param.second);
+                switch (std::get<0>(param.second)) {
+                case ParameterType::Int:
+                    *std::any_cast<int *>(std::get<1>(param.second)) = std::any_cast<int>(val);
+                    break;
+                case ParameterType::Double:
+                    *std::any_cast<double *>(std::get<1>(param.second)) = std::any_cast<double>(val);
+                    break;
+                case ParameterType::String:
+                    *std::any_cast<std::string *>(std::get<1>(param.second)) = std::any_cast<std::string>(val);
+                    break;
+                case ParameterType::Bool:
+                    *std::any_cast<bool *>(std::get<1>(param.second)) = std::any_cast<bool>(val);
+                    break;
+                default:
+                    break;
+                }
+                continue;
+            } else { // No value and no default - > required!
+                RCLCPP_FATAL(rclcpp::get_logger("ArmController"), "%s missing parameter \"%s\"", logPrefix.c_str(),
+                             param.first.c_str());
+                return hardware_interface::CallbackReturn::ERROR;
+            }
         }
 
-        switch (param.second.first) {
+        // Parse value for parameter
+        switch (std::get<0>(param.second)) {
         case ParameterType::Int:
-            *std::any_cast<int *>(param.second.second) = std::stoi(search->second);
+            *std::any_cast<int *>(std::get<1>(param.second)) = std::stoi(search->second);
             break;
         case ParameterType::Double:
-            *std::any_cast<double *>(param.second.second) = std::stof(search->second);
+            *std::any_cast<double *>(std::get<1>(param.second)) = std::stof(search->second);
             break;
         case ParameterType::String:
-            *std::any_cast<std::string *>(param.second.second) = search->second;
+            *std::any_cast<std::string *>(std::get<1>(param.second)) = search->second;
+            break;
+        case ParameterType::Bool:
+            *std::any_cast<bool *>(std::get<1>(param.second)) = std::stoi(search->second);
             break;
         default:
             break;
@@ -71,13 +102,13 @@ hardware_interface::CallbackReturn ArmSystemHardware::on_init(const hardware_int
     int stopBits;
     int timeout;
 
-    const std::map<std::string, std::pair<ParameterType, std::any>> CommunicationParams = {
-        {"port", std::make_pair(ParameterType::String, &port)},
-        {"baudrate", std::make_pair(ParameterType::Int, &baudrate)},
-        {"parity", std::make_pair(ParameterType::String, &parityStr)},
-        {"bytesize", std::make_pair(ParameterType::Int, &byteSize)},
-        {"stopbits", std::make_pair(ParameterType::Int, &stopBits)},
-        {"timeout", std::make_pair(ParameterType::Int, &timeout)},
+    const std::map<std::string, std::tuple<ParameterType, std::any, std::any>> CommunicationParams = {
+        {"port", std::make_tuple(ParameterType::String, &port, std::nullopt)},
+        {"baudrate", std::make_tuple(ParameterType::Int, &baudrate, std::nullopt)},
+        {"parity", std::make_tuple(ParameterType::String, &parityStr, std::nullopt)},
+        {"bytesize", std::make_tuple(ParameterType::Int, &byteSize, std::nullopt)},
+        {"stopbits", std::make_tuple(ParameterType::Int, &stopBits, std::nullopt)},
+        {"timeout", std::make_tuple(ParameterType::Int, &timeout, std::nullopt)},
     };
 
     if (parseParameters(info.hardware_parameters, CommunicationParams, "RS485 communication") !=
@@ -133,18 +164,23 @@ hardware_interface::CallbackReturn ArmSystemHardware::on_init(const hardware_int
         int deviceID;
         double motorLimits[2];
         double RPM;
+        double homeSpeed;
+        int homeConfig;
+        bool isReversed;
 
-        double startingPos = 0;
+        // double startingPos = 0;
         urdf::JointLimitsSharedPtr jointLimits = model.getJoint(joint.name.c_str())->limits;
 
         // Parse hardware parameters
-        const std::map<std::string, std::pair<ParameterType, std::any>> jointParams = {
-            {"type", std::make_pair(ParameterType::String, &motorType)},
-            {"id", std::make_pair(ParameterType::Int, &deviceID)},
-            {"min", std::make_pair(ParameterType::Double, &motorLimits[0])},
-            {"max", std::make_pair(ParameterType::Double, &motorLimits[1])},
-            {"rpm", std::make_pair(ParameterType::Double, &RPM)},
-            {"homePosition", std::make_pair(ParameterType::Double, &startingPos)},
+        const std::map<std::string, std::tuple<ParameterType, std::any, std::any>> jointParams = {
+            {"type", std::make_tuple(ParameterType::String, &motorType, std::any())},
+            {"id", std::make_tuple(ParameterType::Int, &deviceID, std::any())},
+            {"min", std::make_tuple(ParameterType::Double, &motorLimits[0], std::any())},
+            {"max", std::make_tuple(ParameterType::Double, &motorLimits[1], std::any())},
+            {"rpm", std::make_tuple(ParameterType::Double, &RPM, std::any())},
+            {"homeSpeed", std::make_tuple(ParameterType::Double, &homeSpeed, std::make_any<double>(50))},
+            {"homeConfig", std::make_tuple(ParameterType::Int, &homeConfig, 0)},
+            {"reverse", std::make_tuple(ParameterType::Bool, &isReversed, std::make_any<bool>(false))},
         };
 
         std::stringstream ss;
@@ -157,11 +193,11 @@ hardware_interface::CallbackReturn ArmSystemHardware::on_init(const hardware_int
         std::unique_ptr<Motor> motor;
         // Create the corrsponding motor type for the joint
         if (motorType.compare(ICL_MOTOR) == 0) {
-            motor = std::make_unique<ICLStepper>(rs485, deviceID, startingPos);
+            motor = std::make_unique<ICLStepper>(rs485, deviceID, isReversed);
         } else if (motorType.compare(SERVO57C_MOTOR) == 0) {
-            motor = std::make_unique<Servo57C>(rs485, deviceID, startingPos);
+            motor = std::make_unique<Servo57C>(rs485, deviceID, isReversed);
         } else if (motorType.compare("none") == 0) {
-            motor = std::make_unique<Motor>(rs485, deviceID, startingPos);
+            motor = std::make_unique<Motor>(rs485, deviceID, isReversed);
         } else { // Invalid type
             RCLCPP_FATAL(rclcpp::get_logger("ArmController"), "Joint '%s' has invalid type \"%s\"", joint.name.c_str(),
                          motorType.c_str());
@@ -171,6 +207,7 @@ hardware_interface::CallbackReturn ArmSystemHardware::on_init(const hardware_int
         motor->setJointLimits(jointLimits->lower, jointLimits->upper);
         motor->setMotorLimits(motorLimits[0], motorLimits[1]);
         motor->setMotorSpeedScale(RPM);
+        motor->setMotorHome(homeSpeed, homeConfig);
         motors.insert(std::make_pair(joint.name, std::move(motor)));
 
         RCLCPP_INFO(rclcpp::get_logger("ArmController"), "Joint '%s' created with '%s' motor", joint.name.c_str(),
