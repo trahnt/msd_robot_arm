@@ -1,7 +1,7 @@
 Language: Cpp
 BasedOnStyle: LLVM
 AccessModifierOffset: -4
-ColumnLimit: 120
+ColumnLimit: 130
 ConstructorInitializerIndentWidth: 4
 ContinuationIndentWidth: 4
 FixNamespaceComments: true
@@ -10,3 +10,5 @@ SortIncludes: CaseSensitive
 SortUsingDeclarations: true
 SpacesBeforeTrailingComments: 1
 TabWidth: 4
+InsertBraces: true
+BreakBeforeBraces: Attach

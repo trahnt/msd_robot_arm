@@ -51,5 +51,5 @@ Once the workspace is setup along with any dependencies, the packages can be bui
 cd ~/ros2_ws/
 . /opt/ros/${ROS_DISTRO}/setup.sh
 colcon build --merge-install
+source install/setup.sh
 ```
-

@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.8)
 project(arm_motor_controller)
 
+set(CMAKE_CXX_STANDARD 17) # Set the desired C++ standard (e.g., 11, 14, 17, 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
   add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
@@ -10,6 +14,7 @@ set(PACKAGE_INCLUDE_DEPENDS
   pluginlib
   rclcpp
   rclcpp_lifecycle
+  urdf
 )
 
 # find dependencies
@@ -23,6 +28,12 @@ add_library(
   arm_motor_controller
   SHARED
   src/ArmSystem.cpp
+  src/Motor.cpp
+  src/Servo57C.cpp
+  src/Servo42D.cpp
+  src/ICLStepper.cpp
+  src/Communication/RS485.cpp
+  src/Communication/ModbusDevice.cpp
 )
 target_compile_features(arm_motor_controller PUBLIC cxx_std_17)
 target_include_directories(arm_motor_controller PUBLIC
@@ -42,6 +53,9 @@ install(
   DIRECTORY include/
   DESTINATION include/arm_motor_controller
 )
+
+install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
+install(DIRECTORY config DESTINATION share/${PROJECT_NAME})
 
 install(TARGETS arm_motor_controller
   EXPORT export_arm_motor_controller
