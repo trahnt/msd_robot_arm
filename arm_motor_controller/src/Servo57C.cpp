@@ -139,10 +139,9 @@ int Servo57C::read(double time, double period) {
     EncoderData rawPos;
     int ret = readParameter(0x30, rawPos.raw, 6);
     if (ret) {
-        // FIXME I'M IGNORING ERRORS
-        // RCLCPP_WARN(rclcpp::get_logger("MotorState"), "Motor %d encountered and error while reading, got %d", id, ret);
-        // return -1;
-        return 0;
+        RCLCPP_WARN(rclcpp::get_logger("MotorState"), "Motor %d encountered and error while reading, got %d", id, ret);
+        return -1;
+        // To ignore errors return 0 like a boss
     }
 
     if (count < 2) {
