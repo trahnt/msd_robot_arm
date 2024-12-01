@@ -1,0 +1,9 @@
+<library path="marge">
+  <class name="marge/Marge"
+         type="marge::Marge"
+         base_class_type="controller_interface::ControllerInterface">
+    <description>
+        The controller that really only controlls homing algorithm (homer)
+    </description>
+  </class>
+</library>

@@ -141,6 +141,7 @@ int Servo57C::read(double time, double period) {
     if (ret) {
         RCLCPP_WARN(rclcpp::get_logger("MotorState"), "Motor %d encountered and error while reading, got %d", id, ret);
         return -1;
+        // To ignore errors return 0 like a boss
     }
 
     if (count < 2) {
