@@ -29,9 +29,6 @@ namespace marge {
     }
 
 
-
-
-
     controller_interface::CallbackReturn Marge::on_configure(const rclcpp_lifecycle::State &) {
         // our callback lambda for what to do when we get a message
         auto callback = [this](const std::shared_ptr<std_msgs::msg::Bool> bool_msg) -> void {

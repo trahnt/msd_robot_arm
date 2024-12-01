@@ -1,4 +1,4 @@
-# Default initial positions for arm_end_effector's ros2_control fake system
+# Default initial positions for arm_final's ros2_control fake system
 
 initial_positions:
   grip_joint: 0

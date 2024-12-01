@@ -38,7 +38,7 @@ smoothing_filter_plugin_name: "online_signal_smoothing::ButterworthFilterPlugin"
 is_primary_planning_scene_monitor: true
 
 ## MoveIt properties
-move_group_name:  arm_planning_group  # Often 'manipulator' or 'arm'
+move_group_name:  arm  # Often 'manipulator' or 'arm'
 planning_frame: world  # The MoveIt planning frame. Often 'base_link' or 'world'
 
 ## Other frames
@@ -54,8 +54,8 @@ num_outgoing_halt_msgs_to_publish: 4
 ## Configure handling of singularities and joint limits
 # TODO TUNE THESE PROPERTIES
 lower_singularity_threshold:  10.0  # Start decelerating when the condition number hits this (close to singularity)
-hard_stop_singularity_threshold: 100.0 # Stop when the condition number hits this
-joint_limit_margin: 0.1 # added as a buffer to joint limits [radians]. If moving quickly, make this larger.
+hard_stop_singularity_threshold: 150.0 # Stop when the condition number hits this
+joint_limit_margin: 0.05 # added as a buffer to joint limits [radians]. If moving quickly, make this larger.
 leaving_singularity_threshold_multiplier: 2.0 # Multiply the hard stop limit by this when leaving singularity (see https://github.com/ros-planning/moveit2/pull/620)
 
 ## Topic names
@@ -63,7 +63,7 @@ cartesian_command_in_topic: ~/delta_twist_cmds  # Topic for incoming Cartesian t
 joint_command_in_topic: ~/delta_joint_cmds # Topic for incoming joint angle commands
 joint_topic: /joint_states
 status_topic: ~/status # Publish status to this topic
-command_out_topic: /arm_planning_group_controller/joint_trajectory # Publish outgoing commands here
+command_out_topic: /arm_controller/joint_trajectory # Publish outgoing commands here
 
 ## Collision checking for the entire robot body
 check_collisions: true # Check collisions?
