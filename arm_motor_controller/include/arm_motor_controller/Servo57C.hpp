@@ -55,7 +55,7 @@ private:
     static constexpr uint8_t UPLINK_PACKET_HEAD = 0xFB;
 
     static constexpr uint8_t ACCELERATION = 30;
-    static constexpr uint16_t ENCODER_VALUE_MAX = 0x3FFF;
+    static constexpr uint16_t ENCODER_VALUE_MAX = 0x4000;
     static constexpr uint32_t PULSES_PER_REV = 3200;
 
     // int16_t previousVel;

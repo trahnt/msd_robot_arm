@@ -138,4 +138,23 @@ int RS485::rawWrite(uint8_t *buf, size_t size) {
 
 int RS485::rawRead(uint8_t *buf, size_t size) { return read(fd, buf, size); }
 
+// int RS485::rawRead(uint8_t *buf, size_t size) {
+//     int ret = 0;
+//     int count = 0;
+//     do {
+//         ret = read(fd, buf, size);
+
+//         if (ret <= 0) {
+//             return ret;
+//         } else if (ret == 0) {
+//             return count;
+//         }
+
+//         count += ret;
+//         buf += ret;
+//     } while (count < size);
+
+//     return count;
+// }
+
 } // namespace arm_motor_controller
