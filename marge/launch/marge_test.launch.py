@@ -34,17 +34,22 @@ def generate_launch_description():
     )
 
     # Get URDF via xacro
-    # NOTE this just gets a copy of matt's stuff that I put in this package
+    # go int othe other package to get the code
     robot_description_content = Command( [
             PathJoinSubstitution([FindExecutable(name="xacro")]),
             " ",
-            PathJoinSubstitution([FindPackageShare("arm_motor_controller"), "config", "armtest.urdf.xacro"])
+            PathJoinSubstitution([
+                FindPackageShare("arm_motor_controller"),
+                "config",
+                "armtest.urdf.xacro"
+            ])
         ]
     )
 
     robot_description = {"robot_description": robot_description_content}
 
-    robot_controllers = PathJoinSubstitution(
+    # The yaml of the ros2_control controller yaml
+    robot_controllers_yaml = PathJoinSubstitution(
         [
             FindPackageShare("marge"),
             "config",
@@ -52,21 +57,19 @@ def generate_launch_description():
         ]
     )
 
-
     # will prob fail but idc about rviz config file
     # rviz_config_file = PathJoinSubstitution(
         # [FindPackageShare("marge"), "r6bot/rviz", "view_robot.rviz"]
     # )
 
-
-    controller_manager = Node(
+    control_node = Node(
         package="controller_manager",
         executable="ros2_control_node",
-        parameters=[robot_controllers],
+        parameters=[robot_controllers_yaml],
         output="both",
         remappings=[
-            ("~/robot_description", "robot_description"),
-        ],
+             ("~/robot_description", "/robot_description"),
+         ],
     )
 
 
@@ -78,6 +81,7 @@ def generate_launch_description():
     )
 
 
+    '''
     static_tf = Node(
         package="tf2_ros",
         executable="static_transform_publisher",
@@ -88,6 +92,7 @@ def generate_launch_description():
                 ("~/robot_description", "robot_description"),
             ],
     )
+    '''
    
 
 
@@ -101,26 +106,39 @@ def generate_launch_description():
         condition=IfCondition(gui),
     )
 
+
+    # tells the controller manager to spawn the jsb
     joint_state_broadcaster_spawner = Node(
         package="controller_manager",
         executable="spawner",
         arguments=["joint_state_broadcaster"],
     )
 
+    marge_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        # may have to change 'marge_controller' here
+        arguments=["marge_controller", "--param-file", robot_controllers_yaml],
+    )
+    
     # marge_spawner = Node(
         # package="controller_manager",
         # executable="spawner",
         # arguments=["marge_controller", "--param-file", robot_controllers],
     # )
 
-    marge_spawner = Node(
-        package="controller_manager",
-        executable="spawner",
-        arguments=["marge_controller", "-c", "/controller_manager"],
-        remappings=[
-            ("~/robot_description", "robot_description"),
-        ],
-    )
+
+    # I think something is broken here?
+    # i can get ithis going just fine by doing 
+    # `ros2 control load_controller marge_spawner` manually
+    # marge_spawner = Node(
+        # package="controller_manager",
+        # executable="spawner",
+        # arguments=["marge_controller", "-c", "/controller_manager"],
+        # remappings=[
+            # ("~/robot_description", "/robot_description"),
+        # ],
+    # )
 
     # Delay rviz start after `joint_state_broadcaster`
     delay_rviz_after_joint_state_broadcaster_spawner = RegisterEventHandler(
@@ -139,20 +157,26 @@ def generate_launch_description():
         )
     )
 
-    spawn_marge_after_cm = RegisterEventHandler(
-        event_handler=OnProcessExit(
-            target_action=controller_manager,
-            on_exit=[marge_spawner],
-        )
-    )
-
+    '''
     nodes = [
         robot_state_pub_node,
-        controller_manager,
         static_tf,
-        spawn_marge_after_cm,
+        controller_manager,
+        # joint_state_broadcaster_spawner,
+        # spawn_marge_after_cm,
+        marge_spawner,
         delay_joint_state_broadcaster_after_marge_spawner,
+        # delay_rviz_after_joint_state_broadcaster_spawner,
+    ]
+    '''
+
+    nodes = [
+        control_node,
+        robot_state_pub_node,
+        marge_spawner,
         delay_rviz_after_joint_state_broadcaster_spawner,
+        delay_joint_state_broadcaster_after_marge_spawner,
     ]
 
     return LaunchDescription(declared_arguments + nodes)
+

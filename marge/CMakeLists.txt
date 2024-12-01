@@ -13,8 +13,15 @@ set(CONTROLLER_INCLUDE_DEPENDS
     pluginlib
     rcpputils
     controller_interface
+    hardware_interface
+    rclcpp
+    rclcpp_lifecycle
     realtime_tools
     trajectory_msgs
+    generate_parameter_library
+    std_srvs
+    tf2
+    tf2_msgs
 )
 
 
@@ -36,8 +43,9 @@ foreach(dep IN ITEMS ${CONTROLLER_INCLUDE_DEPENDS})
     find_package(${dep} REQUIRED)
 endforeach()
 
-
 ## Compile stuff
+
+# generate parameter lib stuff here
 
 # maybe?
 add_library(
@@ -46,32 +54,25 @@ add_library(
     src/marge.cpp
 )
 
+target_compile_features(marge PUBLIC cxx_std_17)
 
 # dawg i'm not gonna lie idek 
 target_include_directories(marge PUBLIC
-$<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
-)
+    $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include/marge>)
+
+# target_link_libraries(marge PUBLIC  something something parameters
 
 ament_target_dependencies(
-    marge PUBLIC
+    marge 
+    PUBLIC
     ${CONTROLLER_INCLUDE_DEPENDS}
 )
 
+
 # Export controller plugin
-pluginlib_export_plugin_description_file(controller_interface marge.xml)
-
-
-
-###########
-# Install #
-###########
-install(
-    DIRECTORY launch config
-    DESTINATION share/${PROJECT_NAME}
-)
-
-
-
+pluginlib_export_plugin_description_file(
+    controller_interface marge.xml)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
@@ -85,4 +86,28 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 endif()
 
+
+
+###########
+# Install #
+###########
+
+install(
+    DIRECTORY include/
+    DESTINATION include/marge
+)
+
+install(DIRECTORY launch DESTINATION share/${PROJECT_NAME})
+install(DIRECTORY config DESTINATION share/${PROJECT_NAME})
+
+install(TARGETS marge
+  EXPORT export_marge
+  RUNTIME DESTINATION bin
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+)
+
+
+ament_export_targets(export_marge HAS_LIBRARY_TARGET)
+ament_export_dependencies(${CONTROLLER_INCLUDE_DEPENDS})
 ament_package()

@@ -1,6 +1,6 @@
 controller_manager:
   ros__parameters:
-    update_rate: 10  # Hz
+    update_rate: 30  # Hz
 
     joint_state_broadcaster:
       type: joint_state_broadcaster/JointStateBroadcaster
@@ -17,6 +17,7 @@ marge_controller:
       - joint_4
       - joint_5
       - joint_6
+      - grip_joint
 
     command_interfaces:
       - home
