@@ -52,6 +52,12 @@ protected:
     std::vector<std::string> state_interface_types_;
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr home_message_subscriber_;
 
+    // need two command interfaces
+    void assign_interfaces( 
+    std::vector<hardware_interface::LoanedCommandInterface> && command_interfaces,
+    std::vector<hardware_interface::LoanedStateInterface> && state_interfaces);
+
+
 };
 }  // namespace
 

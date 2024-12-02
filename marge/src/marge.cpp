@@ -37,11 +37,12 @@ namespace marge {
             // TODO matt
             // This is where the homing algirhtm stuff will go.
             // When marge gets a home_request message, this function gets ran
+            
+
+            // Make sure all the motors are none type
+            // send out homing messages one by one
 
 
-            // from example7
-            // traj_msg_external_point_ptr_.writeFromNonRT(traj_msg);
-            // new_msg_ = true;
         };
 
         home_message_subscriber_ = get_node()->create_subscription<std_msgs::msg::Bool>(

@@ -148,7 +148,9 @@ int Servo42D::read(double time, double period) {
     if ((time - lastSecond) > 1.0) {
         lastSecond = time;
         if (errorCounts > 50) {
-            RCLCPP_ERROR(rclcpp::get_logger("MotorState"), "Unable to communicate with Motor %d! counts at %d", id, errorCounts);
+            // FIXME HACK just for marge testing BEN
+            // RCLCPP_ERROR(rclcpp::get_logger("MotorState"), "Unable to communicate with Motor %d! counts at %d", id, errorCounts);
+
         }
     }
     // if (count < 10) {
@@ -161,8 +163,10 @@ int Servo42D::read(double time, double period) {
     uint16_t raw[3] = {0};
     // int ret = readRegister(ENCODER_REGISTER_ADDRESS_START, 2, raw);
     if (modbus.readRegisters(ENCODER_REGISTER_ADDRESS_START, READ_FUNCTION_CODE, 3, raw)) {
-        RCLCPP_WARN(rclcpp::get_logger("MotorState"), "Motor %d encountered and error while reading", id);
-        return -1;
+        // FIXME HACK just for ben's marge testing purposes
+        // RCLCPP_WARN(rclcpp::get_logger("MotorState"), "Motor %d encountered and error while reading", id);
+        // return -1;
+        return 0;
     }
 
     double pos = static_cast<double>(raw[1] << 16 | raw[2]) / ENCODER_TO_PULSES;
