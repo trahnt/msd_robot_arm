@@ -245,14 +245,14 @@ std::vector<hardware_interface::CommandInterface> ArmSystemHardware::export_comm
 
 hardware_interface::CallbackReturn ArmSystemHardware::on_configure(const rclcpp_lifecycle::State &previous_state) {
     (void)previous_state;
-    if(!rs485->connect()) {
+    if (!rs485->connect()) {
         RCLCPP_ERROR(rclcpp::get_logger("ArmController"), "Failed to establish serial ocnnection over RS485!");
 
         // if you want to ignore the problem...
         // RCLCPP_WARN(rclcpp::get_logger("ArmController"), "ELECTING TO IGNORE THE FACT SERIAL BROKE");
         // return hardware_interface::CallbackReturn::SUCCESS;
 
-        return hardware_interface::CallbackReturn::FAILURE; 
+        return hardware_interface::CallbackReturn::FAILURE;
     }
 
     for (auto const &motor : motors) {
@@ -298,12 +298,12 @@ hardware_interface::CallbackReturn ArmSystemHardware::on_shutdown(const rclcpp_l
 }
 
 hardware_interface::return_type ArmSystemHardware::read(const rclcpp::Time &time, const rclcpp::Duration &period) {
-    static double lastupdate = 0.0;
-    if (time.seconds() - lastupdate > 1) {
-        RCLCPP_INFO(rclcpp::get_logger("ArmController"), "Got read update! Current time: %f, Period: %f", time.seconds(),
-                    period.seconds());
-        lastupdate = time.seconds();
-    }
+    // static double lastupdate = 0.0;
+    // if (time.seconds() - lastupdate > 1) {
+    //     RCLCPP_INFO(rclcpp::get_logger("ArmController"), "Got read update! Current time: %f, Period: %f", time.seconds(),
+    //                 period.seconds());
+    //     lastupdate = time.seconds();
+    // }
 
     for (auto const &motor : motors) {
         motor.second->read(time.seconds(), period.seconds());
@@ -312,12 +312,12 @@ hardware_interface::return_type ArmSystemHardware::read(const rclcpp::Time &time
 }
 
 hardware_interface::return_type ArmSystemHardware::write(const rclcpp::Time &time, const rclcpp::Duration &period) {
-    static double lastupdate = 0.0;
-    if (time.seconds() - lastupdate > 1) {
-        RCLCPP_INFO(rclcpp::get_logger("ArmController"), "Got write update! Current time: %f, Period: %f", time.seconds(),
-                    period.seconds());
-        lastupdate = time.seconds();
-    }
+    // static double lastupdate = 0.0;
+    // if (time.seconds() - lastupdate > 1) {
+    //     RCLCPP_INFO(rclcpp::get_logger("ArmController"), "Got write update! Current time: %f, Period: %f", time.seconds(),
+    //                 period.seconds());
+    //     lastupdate = time.seconds();
+    // }
 
     for (auto const &motor : motors) {
         motor.second->write(time.seconds(), period.seconds());
@@ -330,4 +330,3 @@ hardware_interface::return_type ArmSystemHardware::write(const rclcpp::Time &tim
 
 #include "pluginlib/class_list_macros.hpp"
 PLUGINLIB_EXPORT_CLASS(arm_motor_controller::ArmSystemHardware, hardware_interface::SystemInterface)
-

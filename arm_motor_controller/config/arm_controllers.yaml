@@ -11,6 +11,9 @@ controller_manager:
     joint_state_broadcaster:
       type: joint_state_broadcaster/JointStateBroadcaster
 
+    marge_controller:
+      type: marge/Marge
+
 arm_planning_group_controller:
   ros__parameters:
     joints:
@@ -70,3 +73,20 @@ joint_state_broadcaster:
 #       velocity: velocity
 #     use_local_topics: false
 #     use_urdf_to_filter: true
+
+marge_controller:
+  ros__parameters:
+    joints:
+      - joint_1
+      - joint_2
+      - joint_3
+      - joint_4
+      - joint_5
+      - joint_6
+      - grip_joint
+
+    command_interfaces:
+      - home
+
+    state_interfaces:
+      - home

@@ -68,6 +68,8 @@ public:
 
     uint32_t update(double delta);
 
+    void resetErrors() { readErrorCounts = writeErrorCounts = 0; };
+
     uint32_t getReadErrors() { return readErrorCounts; };
     uint32_t getWriteErrors() { return writeErrorCounts; };
 
