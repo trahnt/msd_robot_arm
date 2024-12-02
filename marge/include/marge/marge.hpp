@@ -12,23 +12,22 @@ namespace marge {
 
 using CallbackReturn = rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn;
 
-// The node that gets made inside the controller interface
+
+using RefToLoanedState = std::reference_wrapper<hardware_interface::LoanedStateInterface>;
+using RefToLoanedCommand = std::reference_wrapper<hardware_interface::LoanedCommandInterface>;
 
 
 
-
-
-// The acutal controller
 class Marge : public controller_interface::ControllerInterface {
 public:
 
-    // A LOT of other code uses these
+    // A LOT of other code uses these big all caps macro things
     // I belive they're for/from visibility_control.h which I am not doing
     // becuase it seems dumb
     //
     // Its for controlling visibility of the functions? but i don't care
-    // Nothing matters anymore, I'm gonna start pronouncing the L in salmon
-    //
+    // Nothing matters anymore
+
     // CONTROLLER_INTERFACE_PUBLIC
     Marge();
 
@@ -44,22 +43,27 @@ public:
     controller_interface::InterfaceConfiguration state_interface_configuration() const override;
     controller_interface::return_type update( const rclcpp::Time & time, const rclcpp::Duration & period) override;
 
+    controller_interface::CallbackReturn on_activate(const rclcpp_lifecycle::State & previous_state) override;
     controller_interface::CallbackReturn on_deactivate(const rclcpp_lifecycle::State & previous_state) override;
 
 protected:
     std::vector<std::string> joint_names_;
     std::vector<std::string> command_interface_types_;
     std::vector<std::string> state_interface_types_;
+    // The subscription to the /home_request ROS topic
     rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr home_message_subscriber_;
 
-    // need two command interfaces
-    void assign_interfaces( 
-    std::vector<hardware_interface::LoanedCommandInterface> && command_interfaces,
-    std::vector<hardware_interface::LoanedStateInterface> && state_interfaces);
+
+    // See the "using" statements at the top
+    std::vector<RefToLoanedCommand> home_command_interface_;
+    std::vector<RefToLoanedState> home_state_interface_;
+
+    // String: vector of references to hardware loaned command interfaces
+    std::unordered_map<std::string, std::vector<RefToLoanedCommand> *> command_interface_map_ = {{"home", &home_command_interface_}};
+    std::unordered_map<std::string, std::vector<RefToLoanedState> *> state_interface_map_ = {{"home", &home_state_interface_}};
 
 
 };
-}  // namespace
-
+}
 
 #endif

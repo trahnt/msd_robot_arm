@@ -42,6 +42,13 @@ namespace marge {
             // Make sure all the motors are none type
             // send out homing messages one by one
 
+            home_command_interface_[0].get().set_value(1);
+            home_command_interface_[1].get().set_value(1);
+            home_command_interface_[2].get().set_value(1);
+            home_command_interface_[3].get().set_value(1);
+            home_command_interface_[4].get().set_value(1);
+            home_command_interface_[5].get().set_value(1);
+            home_command_interface_[6].get().set_value(1);
 
         };
 
@@ -51,11 +58,22 @@ namespace marge {
         return CallbackReturn::SUCCESS;
     }
 
+    controller_interface::CallbackReturn Marge::on_activate(const rclcpp_lifecycle::State & previous_state){
+        for (auto & interface : command_interfaces_) {
+            command_interface_map_[interface.get_interface_name()]->push_back(interface);
+        }
+
+        // assign state interfaces
+        for (auto & interface : state_interfaces_) {
+            state_interface_map_[interface.get_interface_name()]->push_back(interface);
+        }
+
+        RCLCPP_INFO(this->get_node()->get_logger(), "MARGE ACTIVATED"); 
+        return CallbackReturn::SUCCESS;
+    }
 
 
     controller_interface::CallbackReturn Marge::on_deactivate(const rclcpp_lifecycle::State & previous_state){
-        // rclcpp::shutdown();
-        // nodeThread_.join();
         RCLCPP_INFO(this->get_node()->get_logger(), "MARGE DEACTIVATED"); 
         return CallbackReturn::SUCCESS;
     }

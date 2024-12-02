@@ -120,6 +120,8 @@ int Servo42D::home() {
     //     }
     //     isHoming = true;
     // }
+
+    RCLCPP_INFO(rclcpp::get_logger("MotorState"), "Motor %d home function called!", id);
     return 0;
 }
 
