@@ -150,9 +150,7 @@ int Servo42D::read(double time, double period) {
     if ((time - lastSecond) > 1.0) {
         lastSecond = time;
         if (errorCounts > 50) {
-            // FIXME HACK just for marge testing BEN
-            // RCLCPP_ERROR(rclcpp::get_logger("MotorState"), "Unable to communicate with Motor %d! counts at %d", id, errorCounts);
-
+            RCLCPP_ERROR(rclcpp::get_logger("MotorState"), "Unable to communicate with Motor %d! counts at %d", id, errorCounts);
         }
     }
     // if (count < 10) {
