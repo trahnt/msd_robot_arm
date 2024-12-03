@@ -249,8 +249,8 @@ hardware_interface::CallbackReturn ArmSystemHardware::on_configure(const rclcpp_
         RCLCPP_ERROR(rclcpp::get_logger("ArmController"), "Failed to establish serial ocnnection over RS485!");
 
         // if you want to ignore the problem...
-        RCLCPP_WARN(rclcpp::get_logger("ArmController"), "ELECTING TO IGNORE THE FACT SERIAL BROKE");
-        return hardware_interface::CallbackReturn::SUCCESS;
+        // RCLCPP_WARN(rclcpp::get_logger("ArmController"), "ELECTING TO IGNORE THE FACT SERIAL BROKE");
+        // return hardware_interface::CallbackReturn::SUCCESS;
 
         return hardware_interface::CallbackReturn::FAILURE; 
     }
