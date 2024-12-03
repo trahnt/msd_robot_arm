@@ -48,6 +48,12 @@ int Motor::exportCommand(std::vector<hardware_interface::CommandInterface> &comm
 
 int Motor::read(double time, double period) {
     (void)time, (void)period;
+
+    // if(time - lastupdate > 1.0){
+    //     RCLCPP_INFO(rclcpp::get_logger("MotorState"), "Motor %d read pos %0.4f, vel %0.4f", id, motorPos, motorVel);
+    //     lastupdate = time;
+    // }
+
     // RCLCPP_INFO(rclcpp::get_logger("MotorState"), "Motor %d read update", id);
     rosCurrentPos = motorPos2Radians(motorPos);
     rosCurrentVel = motorVel2Radians(motorVel);

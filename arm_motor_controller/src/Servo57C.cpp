@@ -166,6 +166,8 @@ int Servo57C::read(double time, double period) {
         ((static_cast<double>(rawPos.carry) * ENCODER_VALUE_MAX + static_cast<double>(rawPos.val)) * PULSES_PER_REV) /
         ENCODER_VALUE_MAX;
 
+    pos = isReversed ? -pos : pos;
+
     rosCurrentPos = motorPos2Radians(pos);
     rosCurrentVel = motorVel2Radians(motorVel);
 
@@ -201,7 +203,7 @@ int Servo57C::write(double time, double period) {
     msg.head = 0xFA;
     msg.addr = static_cast<uint8_t>(id);
     msg.func = 0xFD;
-    msg.dir = isForward;
+    msg.dir = isReversed ? !isForward : isForward;
     msg.speedH = static_cast<uint8_t>((relVel >> 8) & 0xF);
     msg.speedL = static_cast<uint8_t>(relVel & 0xFF);
     msg.accel = ACCELERATION;

@@ -14,6 +14,7 @@ setup(
         ('share/' + package_name, glob('launch/*.py')),
         ('share/' + package_name+'/urdf/', glob('urdf/*')),
         ('share/' + package_name+'/config/', glob('config/*')),
+        ('share/' + package_name+'/rviz/', glob('rviz/*')),
     ],
     install_requires=['setuptools'],
     zip_safe=True,

@@ -91,7 +91,7 @@ int ICLStepper::enable() {
 
     // move(0, 0, true); // Stop any movement befor enabling
     modbus.writeRegister(ENABLE_REGISTER_ADDRESS_START, WRITE_FUNCTION_CODE, 0x01);
-
+    move(0,0);
     return 0;
 }
 
@@ -113,12 +113,16 @@ int ICLStepper::home() {
         }
 
     } else { // Start homing
+        RCLCPP_INFO(rclcpp::get_logger("MotorState"), "Motor %d is homing...", id);
+        move(0, 0, true);
         int ret;
         if ((ret = modbus.writeRegister(PATH_CONTROL_REGISTER_ADDRESS, WRITE_FUNCTION_CODE, 0x20)) != 0) {
+            RCLCPP_INFO(rclcpp::get_logger("MotorState"), "Motor %d HOME REQUEST FAILED", id);
             return ret;
         }
         isHoming = true;
     }
+    
     return 0;
 }
 
@@ -164,7 +168,7 @@ int ICLStepper::read(double time, double period) {
     uint16_t raw[2] = {0};
     // int ret = readRegister(ENCODER_REGISTER_ADDRESS_START, 2, raw);
     if (modbus.readRegisters(ENCODER_REGISTER_ADDRESS_START, READ_FUNCTION_CODE, 2, raw)) {
-        RCLCPP_WARN(rclcpp::get_logger("MotorState"), "Motor %d encountered and error while reading", id);
+        RCLCPP_WARN(rclcpp::get_logger("MotorState"), "Motor %d encountered an error while reading", id);
         return -1;
     }
 
@@ -209,6 +213,9 @@ int ICLStepper::write(double time, double period) {
         // Only update the pos on significant change
         if (abs(pos - motorPos) < 1) {
             return 0;
+        } else if (abs(vel) < 0.00001) { // Handle stops
+            motorVel = 0.0; 
+            return move(0,0);
         } else if (signbit(pos - motorPos) != signbit(vel)) {
             // Only move to position in the same direction as the velocity (Fixes weirdness from JTC)
             return 0;

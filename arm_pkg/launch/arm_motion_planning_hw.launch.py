@@ -57,7 +57,7 @@ def generate_launch_description():
     )
 
     rviz_config_file = PathJoinSubstitution(
-        [FindPackageShare("arm_pkg"), "config", "moveit.rviz"]
+        [FindPackageShare("arm_pkg"), "rviz", "moveit.rviz"]
     )
 
     controller_manager  = Node(

@@ -14,11 +14,14 @@
             </hardware>
             <joint name="joint_1">
                 <param name="type">iCL</param>
+                <!-- <param name="type">none</param> -->
                 <param name="id">1</param>
-                <param name="min">-32000</param>
-                <param name="max">32000</param>
+                <param name="min">0</param>
+                <param name="max">306000</param>
                 <param name="rpm">64</param>
-                <param name="homePosition">0</param>
+                <param name="homeSpeed">50</param>
+                <param name="homeConfig">2</param>
+                <param name="reverse">0</param>
                 <command_interface name="position"/>
                 <command_interface name="velocity"/>
                 <command_interface name="home"/>
@@ -29,12 +32,15 @@
                 <state_interface name="home"/>
             </joint>
             <joint name="joint_2">
+                <!-- <param name="type">iCL</param> -->
                 <param name="type">none</param>
                 <param name="id">2</param>
                 <param name="min">0</param>
-                <param name="max">3200</param>
+                <param name="max">82000</param>
                 <param name="rpm">32</param>
-                <param name="homePosition">0</param>
+                <param name="homeSpeed">5</param>
+                <param name="homeConfig">2</param>
+                <param name="reverse">0</param>
                 <command_interface name="position"/>
                 <command_interface name="velocity"/>
                 <command_interface name="home"/>
@@ -45,13 +51,15 @@
                 <state_interface name="home"/>
             </joint>
             <joint name="joint_3">
-                <param name="type">none</param>
-                <!-- <param name="type">iCL</param> -->
+                <param name="type">iCL</param>
+                <!-- <param name="type">none</param> -->
                 <param name="id">3</param>
-                <param name="min">-32000</param>
+                <param name="min">-310000</param>
                 <param name="max">0</param>
                 <param name="rpm">32</param>
-                <param name="reverse">1</param>
+                <param name="homeSpeed">10</param>
+                <param name="homeConfig">19</param>
+                <param name="reverse">0</param>
                 <command_interface name="position"/>
                 <command_interface name="velocity"/>
                 <command_interface name="home"/>
@@ -62,12 +70,15 @@
                 <state_interface name="home"/>
             </joint>
             <joint name="joint_4">
-                <param name="type">none</param>
+                <param name="type">iCL</param>
+                <!-- <param name="type">none</param> -->
                 <param name="id">4</param>
                 <param name="min">0</param>
-                <param name="max">3200</param>
+                <param name="max">176000</param>
                 <param name="rpm">32</param>
-                <param name="homePosition">0</param>
+                <param name="homeSpeed">10</param>
+                <param name="homeConfig">2</param>
+                <param name="reverse">1</param>
                 <command_interface name="position"/>
                 <command_interface name="velocity"/>
                 <command_interface name="home"/>
@@ -83,7 +94,9 @@
                 <param name="min">0</param>
                 <param name="max">3200</param>
                 <param name="rpm">32</param>
-                <param name="homePosition">0</param>
+                <param name="homeSpeed">0</param>
+                <param name="homeConfig">0</param>
+                <param name="reverse">0</param>
                 <command_interface name="position"/>
                 <command_interface name="velocity"/>
                 <command_interface name="home"/>
@@ -101,7 +114,9 @@
                 <param name="min">-288000</param>
                 <param name="max">288000</param>
                 <param name="rpm">2400</param>
-                <param name="homePosition">0</param>
+                <param name="homeSpeed">0</param>
+                <param name="homeConfig">0</param>
+                <param name="reverse">0</param>
                 <command_interface name="position"/>
                 <command_interface name="velocity"/>
                 <command_interface name="home"/>
