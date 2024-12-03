@@ -3,6 +3,9 @@
 
 #include "arm_motor_controller/Motor.hpp"
 
+#include <chrono>
+#include <thread>
+
 namespace arm_motor_controller {
 
 Motor::Motor(std::shared_ptr<RS485> rs485, uint8_t id, bool isReversed) : rs485(rs485), id(id), isReversed(isReversed) {
@@ -50,9 +53,7 @@ int Motor::read(double time, double period) {
     rosCurrentVel = motorVel2Radians(motorVel);
 
     if (rosTriggerHome >= 1.0) {
-        RCLCPP_INFO(rclcpp::get_logger("MotorState"), "Motor %d Homeing!!!", id);
-        rosTriggerHome = 0.0;
-        rosIsHomed = 1.0;
+        home();
     }
 
     return 0;
@@ -76,5 +77,18 @@ int Motor::write(double time, double period) {
 
     return 0;
 };
+
+int Motor::home(){
+    RCLCPP_INFO(rclcpp::get_logger("MotorState"), "Motor %d is homing...", id);
+    rosIsHomed = 0.0;
+    rosTriggerHome = 0.0;
+    // maybe add a time.sleep?
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(3000));
+
+    RCLCPP_INFO(rclcpp::get_logger("MotorState"), "...Motor %d home!", id);
+    rosIsHomed = 1.0;
+    return 0;
+}
 
 } // namespace arm_motor_controller

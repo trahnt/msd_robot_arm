@@ -1,12 +1,16 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="arm_end_effector">
+
+    <!-- Moveit just did this one arg thing for some reason -->
     <xacro:arg name="initial_positions_file" default="initial_positions.yaml" />
 
-    <!-- Import arm_three urdf file -->
+    <!-- Import arm_final_sim urdf file from sw_arm_desc pkg-->
+    <!-- NOTE this isn't actually a "sim" specific URDF, its a pretty bad name -->
+    <!-- I named it... -->
     <xacro:include filename="$(find sw_arm_desc)/urdf/arm_final_sim.urdf" />
 
     <!-- Import control_xacro -->
-    <xacro:include filename="armtest.ros2_control.xacro" />
+    <xacro:include filename="final_hw.ros2_control.xacro" />
 
 
     <xacro:arm_ros2_control name="arm_final_sim" initial_positions_file="$(arg initial_positions_file)"/>
