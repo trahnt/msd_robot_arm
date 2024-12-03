@@ -1,5 +1,6 @@
 #include "marge/marge.hpp"
 
+// for sleep
 // #include <iostream>
 
 
@@ -32,23 +33,46 @@ namespace marge {
     controller_interface::CallbackReturn Marge::on_configure(const rclcpp_lifecycle::State &) {
         // our callback lambda for what to do when we get a message
         auto callback = [this](const std::shared_ptr<std_msgs::msg::Bool> bool_msg) -> void {
-            RCLCPP_INFO(this->get_node()->get_logger(), "Marge got the home message!");
+            auto log = this->get_node()->get_logger();
+            RCLCPP_INFO(log, "Marge's homing callback called!");
             
             // TODO matt
             // This is where the homing algirhtm stuff will go.
             // When marge gets a home_request message, this function gets ran
             
+            // Change this to change the order of which motor to home
+            std::vector<int> order = {0,1,2,3,4,5,6};
+            for(int m : order){
+                // Write a 1 to the motor, i.e. tell it to home
+                
+                // The motor will go "oh shit"
+                // and change its state to 0, so its un-homed
+                // Then it will hold that 0 until its done homing
+                //
+                //              ______          ______
+                // MotorHomed         |________|
+                //      
+                //                    ^        ^
+                //             home req        motor done homing
 
-            // Make sure all the motors are none type
-            // send out homing messages one by one
+                RCLCPP_INFO(log, "ABOUT to home motor %d state: %f", m+1, home_state_interface_[m].get().get_value());
+                home_command_interface_[m].get().set_value(1);
+                RCLCPP_INFO(log, "HOMING %d value: %f", m+1, home_state_interface_[m].get().get_value());
+                
+                // Wait for the first falling edge
+                while(home_state_interface_[m].get().get_value() >= 1){}
 
-            home_command_interface_[0].get().set_value(1);
-            home_command_interface_[1].get().set_value(1);
-            home_command_interface_[2].get().set_value(1);
-            home_command_interface_[3].get().set_value(1);
-            home_command_interface_[4].get().set_value(1);
-            home_command_interface_[5].get().set_value(1);
-            home_command_interface_[6].get().set_value(1);
+                // Hold while the motor keeps the value at 0, it will set this
+                // to 1 when its done homing
+
+                // wait for the rising edge
+                while(home_state_interface_[m].get().get_value() < 1){}
+                // RCLCPP_INFO(log, "RESET %d value: %f", m, home_state_interface_[m].get().get_value());
+
+                // while(home_state_interface_[m].get().get_value() == 0){}
+                RCLCPP_INFO(log, "HOMED %d value: %f", m+1, home_state_interface_[m].get().get_value());
+
+            }
 
         };
 

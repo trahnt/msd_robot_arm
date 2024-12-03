@@ -46,6 +46,9 @@ public:
     virtual int read(double time, double period);
     virtual int write(double time, double period);
 
+    // NOT making it virtual for sim purposes and making it just work for now
+    int home(void);
+
     double motorPos2Radians(double pos) {
         return (pos - motorLimits[0]) * ((jointLimits[1] - jointLimits[0]) / (motorLimits[1] - motorLimits[0])) + jointLimits[0];
     };
