@@ -3,12 +3,12 @@
     <xacro:arg name="initial_positions_file" default="initial_positions.yaml" />
 
     <!-- Import arm_three urdf file -->
-    <xacro:include filename="$(find sw_arm_desc)/urdf/arm_end_effector.urdf" />
+    <xacro:include filename="$(find sw_arm_desc)/urdf/arm_final_sim.urdf" />
 
     <!-- Import control_xacro -->
     <xacro:include filename="armtest.ros2_control.xacro" />
 
 
-    <xacro:arm_ros2_control name="arm_end_effector" initial_positions_file="$(arg initial_positions_file)"/>
+    <xacro:arm_ros2_control name="arm_final_sim" initial_positions_file="$(arg initial_positions_file)"/>
 
 </robot>
