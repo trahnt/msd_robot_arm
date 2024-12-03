@@ -102,24 +102,26 @@ int Servo42D::disable(bool isEmergency) {
 }
 
 int Servo42D::home() {
-    // if (isHoming) { // Currently homing, check status
-    //     uint16_t resp;
-    //     if (modbus.readRegisters(STATUS_REGISTER_ADDRESS, READ_FUNCTION_CODE, 1, &resp)) {
-    //         RCLCPP_INFO(rclcpp::get_logger("MotorState"), "Motor %d unable to read home status", id);
-    //         return 0;
-    //     }
+    if (isHoming) { // Currently homing, check status
+        uint16_t resp;
+        if (modbus.readRegisters(STATUS_REGISTER_ADDRESS, READ_FUNCTION_CODE, 1, &resp)) {
+            RCLCPP_INFO(rclcpp::get_logger("MotorState"), "Motor %d unable to read home status", id);
+            return 0;
+        }
 
-    //     if (resp & 0x40) { // Finished homing
-    //         return 1;
-    //     }
+        if (resp == 0) { // Failed
+            return -1;
+        } else if (resp != 5) { // Finished homing
+            return 1;
+        }
 
-    // } else { // Start homing
-    //     int ret;
-    //     if ((ret = modbus.writeRegister(PATH_CONTROL_REGISTER_ADDRESS, WRITE_FUNCTION_CODE, 0x20)) != 0) {
-    //         return ret;
-    //     }
-    //     isHoming = true;
-    // }
+    } else { // Start homing
+        int ret;
+        if ((ret = modbus.writeRegister(HOME_Trigger_REGISTER_ADDRESS, WRITE_FUNCTION_CODE, 1)) != 0) {
+            return ret;
+        }
+        isHoming = true;
+    }
 
     RCLCPP_INFO(rclcpp::get_logger("MotorState"), "Motor %d home function called!", id);
     return 0;
@@ -151,6 +153,8 @@ int Servo42D::read(double time, double period) {
         lastSecond = time;
         if (errorCounts > 50) {
             RCLCPP_ERROR(rclcpp::get_logger("MotorState"), "Unable to communicate with Motor %d! counts at %d", id, errorCounts);
+            // modbus.writeRegister(RESTART_REGISTER_ADDRESS, WRITE_FUNCTION_CODE, 1);
+            // modbus.resetErrors();
         }
     }
     // if (count < 10) {
@@ -169,14 +173,14 @@ int Servo42D::read(double time, double period) {
         return 0;
     }
 
-    double pos = static_cast<double>(raw[1] << 16 | raw[2]) / ENCODER_TO_PULSES;
+    motorPos = static_cast<double>(raw[1] << 16 | raw[2]) / ENCODER_TO_PULSES;
 
-    rosCurrentPos = motorPos2Radians(pos);
+    rosCurrentPos = motorPos2Radians(motorPos);
     rosCurrentVel = motorVel2Radians(motorVel);
 
     if (count > 30) {
-        RCLCPP_INFO(rclcpp::get_logger("MotorState"), "Motor %d pos: %0.4f, ros: %0.4f, raw: %x %x %x", id, pos, rosCurrentPos,
-                    raw[2], raw[1], raw[0]);
+        RCLCPP_INFO(rclcpp::get_logger("MotorState"), "Motor %d pos: %0.4f, ros: %0.4f, raw: %d [%x %x %x]", id, motorPos,
+                    rosCurrentPos, (raw[1] << 16 | raw[2]), raw[2], raw[1], raw[0]);
         count = 0;
     }
 
@@ -187,6 +191,33 @@ int Servo42D::read(double time, double period) {
 
 int Servo42D::write(double time, double period) {
     (void)time, (void)period;
+
+    // static uint8_t count = 0;
+    // int32_t target = 0;
+
+    // switch (count) {
+    // case 0:
+    //     target = 0;
+    //     break;
+    // case 1:
+    //     target = 144000;
+    //     break;
+    // case 2:
+    //     target = -144000;
+    //     break;
+    //     // case 3:
+    //     //     target = 0;
+    //     //     break;
+
+    // default:
+    //     count = 0;
+    //     break;
+    // }
+    // move(target, 1000);
+
+    // if (abs(motorPos - target) < 1) {
+    //     count++;
+    // }
 
     // Trigger homing sequence!
     if (rosTriggerHome >= 1.0) {
@@ -211,23 +242,36 @@ int Servo42D::write(double time, double period) {
         // Only update the pos on significant change
         if (abs(pos - motorPos) < 1) {
             return 0;
+        } else if (abs(vel) < 0.00001) {
+            vel = 0.0;
         } else if (signbit(pos - motorPos) != signbit(vel)) {
             // Only move to position in the same direction as the velocity (Fixes weirdness from JTC)
             return 0;
         }
 
-        RCLCPP_INFO(rclcpp::get_logger("MotorState"),
-                    "Motor %d update to position %0.4f (%0.4f), error [%0.4f] with velocity %0.4f (%0.4f)", id, pos, rosTargetPos,
-                    rosTargetPos - rosCurrentPos, vel, rosTargetVel);
+        //! DEBUG!!!!
+        if (vel != 0.0) {
+            RCLCPP_INFO(rclcpp::get_logger("MotorState"),
+                        "Motor %d update to position: current %0.4f (%0.4f), target %0.4f (%0.4f)[%0.4f], error [%0.4f] with "
+                        "velocity %0.4f (%0.4f)",
+                        id, rosCurrentPos, radians2MotorPos(rosCurrentPos), rosTargetPos, pos, motorPos,
+                        rosTargetPos - rosCurrentPos, vel, rosTargetVel);
+        }
 
-        uint16_t realVel = abs(vel) < 1.0 ? 1 : abs(vel);
+        uint16_t realVel = abs(vel);
+
+        // if (abs(vel) < 0.00001) { // if really zero
+        //     realVel = 0;
+        // } else {
+        //     realVel = abs(vel) < 1.0 ? 1 : abs(vel);
+        // }
 
         if (move(pos, realVel)) {
             return -1;
         }
 
         motorVel = realVel;
-        motorPos = trunc(pos);
+        // motorPos = trunc(pos);
 
         // std::stringstream ss;
         // ss << std::hex << std::setfill('0');

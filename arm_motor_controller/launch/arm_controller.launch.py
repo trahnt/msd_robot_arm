@@ -115,6 +115,13 @@ def generate_launch_description():
             ],
     )
 
+    marge_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        # may have to change 'marge_controller' here
+        arguments=["marge_controller", "-c", "/controller_manager"],
+    )
+
     static_tf = Node(
         package="tf2_ros",
         executable="static_transform_publisher",
@@ -183,6 +190,7 @@ def generate_launch_description():
         joint_state_broadcaster_spawner, 
         arm_controller_spawner, 
         gripper_controller_spawner,
+        marge_spawner,
         run_move_group_node,
         # delay_planning_group_controllers_after_robot_controller_spawner,
         delay_rviz_after_joint_state_broadcaster_spawner,
