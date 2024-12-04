@@ -53,7 +53,7 @@ def generate_launch_description():
 
     # RViz
     rviz_config_file = PathJoinSubstitution(
-        [FindPackageShare("arm_pkg"), "rviz", "moveit.rviz"]
+        get_package_share_directory("arm_pkg") + "/rviz/servoing.rviz"
     )
 
     rviz_node = Node(
