@@ -30,7 +30,7 @@ private:
     static constexpr uint8_t WRITE_MULTIPLE_FUNCTION_CODE = 0x10;
 
     /* Configuration Registers */
-    static constexpr uint16_t ENCODER_REGISTER_ADDRESS_START = 0x031;      // 8.1.2
+    static constexpr uint16_t ENCODER_REGISTER_ADDRESS_START = 0x030;      // 8.1.2
     static constexpr uint16_t SPEED_REGISTER_ADDRESS = 0x0032;             // 8.1.3
     static constexpr uint16_t STATUS_REGISTER_ADDRESS = 0x00F1;            // 8.1.10
     static constexpr uint16_t RESTART_REGISTER_ADDRESS = 0x0041;           // 8.2.3
@@ -42,23 +42,28 @@ private:
     static constexpr uint16_t RELATIVE_POSITION_REGISTER_ADDRESS = 0x00FD; // 8.3.4
     static constexpr uint16_t ABSOLUTE_POSITION_REGISTER_ADDRESS = 0x00FE; // 8.3.5
 
-    static constexpr uint16_t ACCELERATION = 0x240;
-    static constexpr double ENCODER_TO_PULSES = 0x4000 / 1600.0; // 8 Mstep, 3200.0 - 16Mstep
-
+    static constexpr uint16_t ACCELERATION = 240;
+    // static constexpr double ENCODER_TO_PULSES = 0x4000 / 1600.0; // 8 Mstep, 3200.0 - 16Mstep
+    static constexpr uint16_t ENCODER_VALUE_MAX = 0x4000;
+    static constexpr uint32_t PULSES_PER_REV = 1600;
+    static constexpr uint16_t FUNNY_VALUE = 0x3a09;
     int move(int32_t pos, uint16_t vel, bool relative = false);
 
     int home();
 
     /* Configuration Options */
-    bool isForwardLimit = false;
+    bool isHomeHighLimit = false;
+    bool homeCCW = false;
     uint16_t homeVelocity = 0x50; // 50rpm
     // Bit2: switch type (=0:limit =1:home); Bit1: move after? (=0:No =1:Yes); Bit0: Dir (=0:CCW =1:CW);
-    uint16_t homeConfig = 0b010; // limit, yes, CCW
+    // uint16_t homeConfig = 0b010; // limit, yes, CCW
+
 
     /* State */
     ModbusDevice modbus;
     bool isHoming = false;
     double lastSecond = 0.0;
+    double resetOffset = 0.0;
 };
 
 } // namespace arm_motor_controller

@@ -64,23 +64,29 @@ int ICLStepper::configure() {
             RCLCPP_INFO(rclcpp::get_logger("MotorState"), "Motor %d register difference at 0x%X setting to 0x%X from 0x%X", id,
                         reg, val, resp);
             saveReg = true;
-            if (modbus.writeRegister(reg, WRITE_FUNCTION_CODE, val)) {
-                RCLCPP_ERROR(rclcpp::get_logger("MotorState"), "Motor %d unable to set register 0x%X to 0x%X", id, reg, val);
-                errorEncountered = true;
+            for(int r = 0; r < 2; r++ ){
+                if (!modbus.writeRegister(reg, WRITE_FUNCTION_CODE, val)) {
+                    break;
+                }
+
+                if(r > 0){
+                    RCLCPP_ERROR(rclcpp::get_logger("MotorState"), "Motor %d unable to set register 0x%X to 0x%X", id, reg, val);
+                    errorEncountered = true; 
+                }
             }
         }
     }
 
     rate.sleep();
 
-    if (saveReg) {
+    if (saveReg && !errorEncountered) {
         RCLCPP_WARN(rclcpp::get_logger("MotorState"), "Motor %d config differed from desired, saving...", id);
 
         // TODO save params!
-        // if (modbus.writeRegister(CONTROL_WORD_REGISTER_ADDRESS, WRITE_FUNCTION_CODE, 0x2211)) {
-        //     RCLCPP_ERROR(rclcpp::get_logger("MotorState"), "Motor %d unable to save registers!!!", id);
-        //     errorEncountered = true;
-        // }
+        if (modbus.writeRegister(CONTROL_WORD_REGISTER_ADDRESS, WRITE_FUNCTION_CODE, 0x2211)) {
+            RCLCPP_ERROR(rclcpp::get_logger("MotorState"), "Motor %d unable to save registers!!!", id);
+            errorEncountered = true;
+        }
     }
 
     return errorEncountered ? -1 : 0;
@@ -105,18 +111,20 @@ int ICLStepper::home() {
         uint16_t resp;
         if (modbus.readRegisters(STATUS_REGISTER_ADDRESS, READ_FUNCTION_CODE, 1, &resp)) {
             RCLCPP_INFO(rclcpp::get_logger("MotorState"), "Motor %d unable to read home status", id);
+            isHoming = false;
             return 0;
         }
 
         if (resp & 0x40) { // Finished homing
+            isHoming = false;
             return 1;
         }
 
     } else { // Start homing
         RCLCPP_INFO(rclcpp::get_logger("MotorState"), "Motor %d is homing...", id);
         move(0, 0, true);
-        int ret;
-        if ((ret = modbus.writeRegister(PATH_CONTROL_REGISTER_ADDRESS, WRITE_FUNCTION_CODE, 0x20)) != 0) {
+        int ret = modbus.writeRegister(PATH_CONTROL_REGISTER_ADDRESS, WRITE_FUNCTION_CODE, 0x20);
+        if (ret != 0) {
             RCLCPP_INFO(rclcpp::get_logger("MotorState"), "Motor %d HOME REQUEST FAILED", id);
             return ret;
         }
@@ -192,9 +200,12 @@ int ICLStepper::write(double time, double period) {
 
     // Trigger homing sequence!
     if (rosTriggerHome >= 1.0) {
-        rosTriggerHome = 0.0;
-        rosIsHomed = 0.0;
-        return home();
+        int ret = home();
+        if(ret == 0){
+            rosTriggerHome = 0.0;
+            rosIsHomed = 0.0;
+        }
+        return ret;
     }
 
     if (isHoming) { // Handle homing
@@ -221,9 +232,9 @@ int ICLStepper::write(double time, double period) {
             return 0;
         }
 
-        RCLCPP_INFO(rclcpp::get_logger("MotorState"),
-                    "Motor %d update to position %0.4f (%0.4f), error [%0.4f] with velocity %0.4f (%0.4f)", id, pos, rosTargetPos,
-                    rosTargetPos - rosCurrentPos, vel, rosTargetVel);
+        // RCLCPP_INFO(rclcpp::get_logger("MotorState"),
+        //             "Motor %d update to position %0.4f (%0.4f), error [%0.4f] with velocity %0.4f (%0.4f)", id, pos, rosTargetPos,
+        //             rosTargetPos - rosCurrentPos, vel, rosTargetVel);
 
         uint16_t realVel = abs(vel) < 1.0 ? 1 : abs(vel);
 

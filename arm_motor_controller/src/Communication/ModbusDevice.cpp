@@ -213,7 +213,12 @@ int ModbusDevice::writeRegister(uint16_t reg, uint8_t func, uint16_t data) {
 
 int ModbusDevice::writeMultiple(uint16_t reg, uint8_t func, uint16_t count, const uint16_t *data) {
     uint8_t raw[ModbusDevice::MAX_PACKET_LEN] = {0};
-
+    uint16_t byteCount = count * 2;
+    if(count & 0x80){
+        count = count & 0x7F;
+        byteCount = (count * 2) - 1;
+    }
+    
     // build the packet
     raw[0] = deviceID;
     raw[1] = func;
@@ -221,7 +226,7 @@ int ModbusDevice::writeMultiple(uint16_t reg, uint8_t func, uint16_t count, cons
     raw[3] = reg;
     raw[4] = count >> 8; // register count
     raw[5] = count;
-    raw[6] = (count * 2); // byte count
+    raw[6] = byteCount; // byte count
 
     // copy data bytes over
     for (int i = 0; i < count; i++) {
@@ -230,12 +235,12 @@ int ModbusDevice::writeMultiple(uint16_t reg, uint8_t func, uint16_t count, cons
     }
 
     // calc crc
-    uint16_t crc = crc16(raw, 7 + count * 2);
-    raw[7 + count * 2] = crc;
-    raw[7 + count * 2 + 1] = crc >> 8;
+    uint16_t crc = crc16(raw, 7 + byteCount);
+    raw[7 + byteCount] = crc;
+    raw[7 + byteCount + 1] = crc >> 8;
 
     // Send downlink packet
-    if (rs485.rawWrite(raw, 9 + count * 2) == -1) {
+    if (rs485.rawWrite(raw, 9 + byteCount) == -1) {
         writeErrorCounts++;
         return WRITE_ERROR; // Error writing
     }
@@ -251,6 +256,14 @@ int ModbusDevice::writeMultiple(uint16_t reg, uint8_t func, uint16_t count, cons
         // Check that the number of bytes read matches the requested count, timeout or error otherwise.
         int num = rs485.rawRead(&raw[7], 1);
         if (num != 1) {
+            std::stringstream ss;
+            ss << std::hex << std::setfill('0');
+            for (size_t i = 0; i < 8; ++i) {
+                ss << std::setw(2) << static_cast<int>(raw[i]) << " ";
+            }
+            std::string str = ss.str();
+            RCLCPP_INFO(rclcpp::get_logger("MotorState"), "Motor %d Bad packet current read count %d: %s", deviceID, numRecv,                      
+                        str.c_str());
             readErrorCounts++;
             return READ_ERROR;
         }
@@ -264,6 +277,20 @@ int ModbusDevice::writeMultiple(uint16_t reg, uint8_t func, uint16_t count, cons
         if (raw[0] == deviceID && raw[1] == func && raw[2] == reg >> 8 && raw[3] == (reg & 0xFF) &&
             (raw[6] | (raw[7] << 8)) == crc16(raw, 6)) {
             break;
+        } else {
+            std::stringstream ss;
+            ss << std::hex << std::setfill('0');
+            for (size_t i = 0; i < 8; ++i) {
+                ss << std::setw(2) << static_cast<int>(raw[i]) << " ";
+            }
+            std::string str = ss.str();
+
+            uint16_t crcPack = (raw[8 - 2] | (raw[8 - 1] << 8));
+            uint16_t crcCalc = crc16(raw, 8 - 2);
+
+            RCLCPP_INFO(rclcpp::get_logger("MotorState"), "Motor %d Bad packet, i=%d,f=%d,n=%d,c=%d(%x,%x) : %s", deviceID,
+                        raw[0] == deviceID, raw[1] == func, raw[2] == count * 2, crcPack == crcCalc, crcPack, crcCalc,
+                        str.c_str());
         }
     }
 

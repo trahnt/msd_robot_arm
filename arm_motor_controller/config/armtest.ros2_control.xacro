@@ -103,7 +103,9 @@
                 <!-- <param name="min">-288000</param>
                 <param name="max">288000</param> -->
                 <param name="rpm">2400</param>
-                <param name="homePosition">0</param>
+                <param name="homeSpeed">10</param>
+                <param name="homeConfig">0</param> <!-- dir, GPIO 4-->
+                <param name="reverse">0</param>
                 <command_interface name="position"/>
                 <command_interface name="velocity"/>
                 <command_interface name="home"/>

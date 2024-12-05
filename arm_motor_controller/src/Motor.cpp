@@ -90,7 +90,7 @@ int Motor::home(){
     rosTriggerHome = 0.0;
     // maybe add a time.sleep?
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(3000));
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
     RCLCPP_INFO(rclcpp::get_logger("MotorState"), "...Motor %d home!", id);
     rosIsHomed = 1.0;

@@ -2,6 +2,10 @@
 
 #include "arm_motor_controller/Servo57C.hpp"
 
+#ifdef __arm__
+#include <wiringPi.h> // Include WiringPi library
+#endif
+
 namespace arm_motor_controller {
 
 namespace {
@@ -52,13 +56,6 @@ union EncoderData {
 
 } // namespace
 
-Servo57C::Servo57C(std::shared_ptr<RS485> rs485, uint32_t id, double startingPos) : Motor(rs485, id, startingPos) {
-    motorVel = 0;
-    motorPos = startingPos;
-}
-
-Servo57C::~Servo57C() {}
-
 uint8_t Servo57C::crc8(uint8_t *msg, uint8_t len) {
     int crc = 0;
     for (int i = 0; i < len; i++) {
@@ -66,6 +63,25 @@ uint8_t Servo57C::crc8(uint8_t *msg, uint8_t len) {
     }
     return crc & 0xFF;
 }
+
+
+Servo57C::Servo57C(std::shared_ptr<RS485> rs485, uint32_t id, double startingPos) : Motor(rs485, id, startingPos) {
+    motorVel = 0;
+    motorPos = startingPos;
+}
+
+Servo57C::~Servo57C() {}
+
+void Servo57C::setMotorHome(uint32_t speed, uint32_t config) {
+    homeVelocity = speed;
+    homeCW = config & 0x10;
+    homePin = config & 0x0F;
+}
+
+int Servo57C::configure(){
+    return 0;
+}
+
 
 int Servo57C::readParameter(uint8_t func, uint8_t *data, uint8_t dataLen) {
     uint8_t raw[Servo57C::MAX_PACKET_LEN] = {0};
@@ -131,6 +147,31 @@ int Servo57C::writeParameter(uint8_t func, uint8_t &data) {
     return 0; // OK
 }
 
+void Servo57C::configureGPIO(){
+    #ifdef __arm__
+    // uses BCM numbering of the GPIOs and directly accesses the GPIO registers.
+    wiringPiSetupGpio();
+    #endif
+}
+
+int Servo57C::home() {
+    if (isHoming) { // Currently homing, check status
+        //TODO Homing with PI GPIO!
+        isHoming = false;
+        return 1;
+    } else { // Start homing
+        RCLCPP_INFO(rclcpp::get_logger("MotorState"), "Motor %d is homing...", id);
+        // move(0, 0, true);
+        isHoming = true;
+    }
+
+    return 0;
+}
+
+int Servo57C::move(int32_t pos, uint16_t vel, bool relative){
+    return 0;
+}
+
 int Servo57C::read(double time, double period) {
     (void)time, (void)period;
     // RCLCPP_INFO(rclcpp::get_logger("MotorState"), "Motor %d read update", id);
@@ -181,47 +222,67 @@ int Servo57C::read(double time, double period) {
 int Servo57C::write(double time, double period) {
     (void)time, (void)period;
 
-    double pos = radians2MotorPos(rosTargetPos);
-    double vel = radians2MotorVel(rosTargetVel);
-
-    // Only update the pos on change
-    if (abs(pos - motorPos) < 1) {
-        return 0;
+    // Trigger homing sequence!
+    if (rosTriggerHome >= 1.0) {
+        int ret = home();
+        if(ret == 0){
+            rosTriggerHome = 0.0;
+            rosIsHomed = 0.0;
+        }
+        return ret;
     }
 
-    // RCLCPP_INFO(rclcpp::get_logger("MotorState"), "Motor %d target pos %.4f (%.4f) with vel %.4f (%.4f)", id,
-    //             rosTargetPos, pos, rosTargetVel, vel);
+    if (isHoming) { // Handle homing
+        int ret;
+        if ((ret = home()) > 0) { // Finished homing
+            rosIsHomed = 1.0;
+        } else if (ret < 0) { // Error homing
+            RCLCPP_ERROR(rclcpp::get_logger("MotorState"), "Motor %d homing failed! %d", id, ret);
+            return ret;
+        }
 
-    // int32_t relPos = pos - motorPos;
-    bool isForward = vel > 0.0; // || relPos < 0;
+    } else { // Normal Move
+        double pos = radians2MotorPos(rosTargetPos);
+        double vel = radians2MotorVel(rosTargetVel);
 
-    int32_t relPos = abs(pos - motorPos);
-    int16_t relVel = abs(vel) < 1.0 ? 1 : abs(vel);
+        // Only update the pos on change
+        if (abs(pos - motorPos) < 1) {
+            return 0;
+        }
 
-    // Build message
-    PositionCommand msg;
-    msg.head = 0xFA;
-    msg.addr = static_cast<uint8_t>(id);
-    msg.func = 0xFD;
-    msg.dir = isReversed ? !isForward : isForward;
-    msg.speedH = static_cast<uint8_t>((relVel >> 8) & 0xF);
-    msg.speedL = static_cast<uint8_t>(relVel & 0xFF);
-    msg.accel = ACCELERATION;
-    msg.pulses = __builtin_bswap32(static_cast<uint32_t>(relPos)); // uint32 gets packed in the wrong order so swap
-                                                                   // bytes
+        // RCLCPP_INFO(rclcpp::get_logger("MotorState"), "Motor %d target pos %.4f (%.4f) with vel %.4f (%.4f)", id,
+        //             rosTargetPos, pos, rosTargetVel, vel);
 
-    // Calc crc8 and place it at the end of the message
-    msg.crc = crc8(msg.raw, ARRAY_LEN(msg.raw));
+        // int32_t relPos = pos - motorPos;
+        bool isForward = vel > 0.0; // || relPos < 0;
 
-    // RCLCPP_INFO(rclcpp::get_logger("MotorState"),
-    //             "Motor %d head: %x, addr: %x, func: %x, dir: %d, speed: %x%x, accel: %x, pulse: %d", id, msg.head,
-    //             msg.addr, msg.func, msg.dir, msg.speedH, msg.speedL, msg.accel, __builtin_bswap32(msg.pulses));
+        int32_t relPos = abs(pos - motorPos);
+        int16_t relVel = abs(vel) < 1.0 ? 1 : abs(vel);
 
-    rs485->rawWrite(msg.raw, 11);
+        // Build message
+        PositionCommand msg;
+        msg.head = 0xFA;
+        msg.addr = static_cast<uint8_t>(id);
+        msg.func = 0xFD;
+        msg.dir = isReversed ? !isForward : isForward;
+        msg.speedH = static_cast<uint8_t>((relVel >> 8) & 0xF);
+        msg.speedL = static_cast<uint8_t>(relVel & 0xFF);
+        msg.accel = ACCELERATION;
+        msg.pulses = __builtin_bswap32(static_cast<uint32_t>(relPos)); // uint32 gets packed in the wrong order so swap
+                                                                    // bytes
 
-    motorVel = vel;
-    motorPos = pos;
+        // Calc crc8 and place it at the end of the message
+        msg.crc = crc8(msg.raw, ARRAY_LEN(msg.raw));
 
+        // RCLCPP_INFO(rclcpp::get_logger("MotorState"),
+        //             "Motor %d head: %x, addr: %x, func: %x, dir: %d, speed: %x%x, accel: %x, pulse: %d", id, msg.head,
+        //             msg.addr, msg.func, msg.dir, msg.speedH, msg.speedL, msg.accel, __builtin_bswap32(msg.pulses));
+
+        rs485->rawWrite(msg.raw, 11);
+
+        motorVel = vel;
+        motorPos = pos;
+    }
     return 0;
 }
 
