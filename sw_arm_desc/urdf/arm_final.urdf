@@ -2,6 +2,16 @@
 <!-- This URDF was automatically created by SolidWorks to URDF Exporter! Originally created by Stephen Brawner (brawner@gmail.com) 
      Commit Version: 1.6.0-4-g7f85cfe  Build Version: 1.6.7995.38578
      For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
+
+<!-- 
+NOTE: this URDF is the "pure" on that was exported, but since Eliza 
+designed the end effector the way she did, it can't accurately be simulated
+with pure ROS, so we replaced it with fake boxes and a fake gripper in
+arm_final_sim.urdf. The "sim" in the name refers to the fact that  the arm
+URDF is for in simulation.
+-->
+
+
 <robot
   name="arm_final">
 <link name="world">

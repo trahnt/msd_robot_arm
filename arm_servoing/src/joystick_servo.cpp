@@ -172,10 +172,10 @@ public:
       table_2_pose.position.y = 0.5;
       table_2_pose.position.z = 0.25;
 
-      collision_object.primitives.push_back(table_1);
-      collision_object.primitive_poses.push_back(table_1_pose);
-      collision_object.primitives.push_back(table_2);
-      collision_object.primitive_poses.push_back(table_2_pose);
+      // collision_object.primitives.push_back(table_1);
+      // collision_object.primitive_poses.push_back(table_1_pose);
+      // collision_object.primitives.push_back(table_2);
+      // collision_object.primitive_poses.push_back(table_2_pose);
       collision_object.operation = collision_object.ADD;
 
       moveit_msgs::msg::PlanningSceneWorld psw;
