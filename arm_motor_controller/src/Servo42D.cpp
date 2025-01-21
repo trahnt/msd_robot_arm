@@ -16,8 +16,8 @@ Servo42D::~Servo42D() {}
 
 void Servo42D::setMotorHome(uint32_t speed, uint32_t config) {
     homeVelocity = speed;
-    homeConfig = config & 0xF;
-    isForwardLimit = config & 0x10;
+    isHomeHighLimit = (config & 0x1) != 0;
+    homeCCW = (config & 0x2) != 0;
 }
 
 int Servo42D::configure() {
@@ -37,6 +37,16 @@ int Servo42D::configure() {
     //     {HOME_REGISTER_ADDRESS_START + 7, ACCELERATION}, // Home acc
     //     {HOME_REGISTER_ADDRESS_START + 8, ACCELERATION}, // Home dec
     // };
+
+    // uint16_t homeMessage[3] = {0};
+    // homeMessage[0] = (isHomeHighLimit ? 0x10 : 0x00) | (homeCCW ? 0x1 : 0x0);
+    // homeMessage[1] = homeVelocity;
+    // homeMessage[2] = 0x0;
+
+    // int ret = modbus.writeMultiple(HOME_Trigger_REGISTER_ADDRESS, WRITE_MULTIPLE_FUNCTION_CODE, 3 | 0x80, homeMessage);
+    // if (ret) {
+    //     RCLCPP_INFO(rclcpp::get_logger("MotorState"), "Motor %d failed configure: %d", id, ret);
+    // }
 
     return 0;
     rclcpp::Rate rate(10);
@@ -90,7 +100,7 @@ int Servo42D::configure() {
 int Servo42D::enable() {
     Motor::enable();
 
-    // move(0, 0, true); // Stop any movement befor enabling
+    move(0, 0); // Stop any movement befor enabling
     modbus.writeRegister(ENABLE_REGISTER_ADDRESS, WRITE_FUNCTION_CODE, 0x01);
 
     return 0;
@@ -102,43 +112,58 @@ int Servo42D::disable(bool isEmergency) {
 }
 
 int Servo42D::home() {
-    // if (isHoming) { // Currently homing, check status
-    //     uint16_t resp;
-    //     if (modbus.readRegisters(STATUS_REGISTER_ADDRESS, READ_FUNCTION_CODE, 1, &resp)) {
-    //         RCLCPP_INFO(rclcpp::get_logger("MotorState"), "Motor %d unable to read home status", id);
-    //         return 0;
-    //     }
+    if (isHoming) { // Currently homing, check status
+        uint16_t resp;
+        if (modbus.readRegisters(STATUS_REGISTER_ADDRESS, READ_FUNCTION_CODE, 1, &resp)) {
+            RCLCPP_INFO(rclcpp::get_logger("MotorState"), "Motor %d unable to read home status", id);
+            isHoming = false;
+            return 0;
+        }
 
-    //     if (resp & 0x40) { // Finished homing
-    //         return 1;
-    //     }
+        if (resp == 0) { // Failed
+            isHoming = false;
+            return -1;
+        } else if (resp != 5) { // Finished homing
+            isHoming = false;
+            RCLCPP_INFO(rclcpp::get_logger("MotorState"), "Motor %d homes, current state %x", id, resp);
+            return 1;
+        }
 
-    // } else { // Start homing
-    //     int ret;
-    //     if ((ret = modbus.writeRegister(PATH_CONTROL_REGISTER_ADDRESS, WRITE_FUNCTION_CODE, 0x20)) != 0) {
-    //         return ret;
-    //     }
-    //     isHoming = true;
-    // }
-
-    RCLCPP_INFO(rclcpp::get_logger("MotorState"), "Motor %d home function called!", id);
+    } else { // Start homing
+        RCLCPP_INFO(rclcpp::get_logger("MotorState"), "Motor %d is homing...", id);
+        int ret = modbus.writeRegister(HOME_Trigger_REGISTER_ADDRESS, WRITE_FUNCTION_CODE, 1);
+        if (ret != 0) {
+            RCLCPP_INFO(rclcpp::get_logger("MotorState"), "Motor %d HOME REQUEST FAILED", id);
+            return ret;
+        }
+        isHoming = true;
+    }
+    
     return 0;
 }
 
 int Servo42D::move(int32_t pos, uint16_t vel, bool relative) {
     // Build the Immediate Trigger message
     uint16_t movementMessage[4] = {0};
-    movementMessage[0] = ACCELERATION;
+    uint16_t addr = ABSOLUTE_POSITION_REGISTER_ADDRESS;
+
+    if(relative){
+        addr = RELATIVE_POSITION_REGISTER_ADDRESS;
+        movementMessage[0] = ACCELERATION << 8 | (pos < 0 ? 0x1 : 0x0);
+        pos = abs(pos);
+    }else {
+        movementMessage[0] = ACCELERATION;
+    }
     movementMessage[1] = vel;
     movementMessage[2] = pos >> 16;
     movementMessage[3] = pos;
 
-    int ret = modbus.writeMultiple(ABSOLUTE_POSITION_REGISTER_ADDRESS, WRITE_MULTIPLE_FUNCTION_CODE, 4, movementMessage);
+    int ret = modbus.writeMultiple(addr, WRITE_MULTIPLE_FUNCTION_CODE, 4, movementMessage);
     if (ret) {
         RCLCPP_INFO(rclcpp::get_logger("MotorState"), "Motor %d failed to move to position", id);
     }
 
-    return 0;
+    return ret;
 }
 
 int Servo42D::read(double time, double period) {
@@ -149,34 +174,36 @@ int Servo42D::read(double time, double period) {
 
     if ((time - lastSecond) > 1.0) {
         lastSecond = time;
-        if (errorCounts > 50) {
+        if (errorCounts > 30) {
             RCLCPP_ERROR(rclcpp::get_logger("MotorState"), "Unable to communicate with Motor %d! counts at %d", id, errorCounts);
+            modbus.writeRegister(RESTART_REGISTER_ADDRESS, WRITE_FUNCTION_CODE, 1);
+            modbus.resetErrors();
+            resetOffset = radians2MotorPos(rosCurrentPos); // A reset returns to 0 so offset the position with the current after the reset
         }
     }
-    // if (count < 10) {
-    //     count++;
-    //     return 0;
-    // }
-
-    // count = 0;
 
     uint16_t raw[3] = {0};
     // int ret = readRegister(ENCODER_REGISTER_ADDRESS_START, 2, raw);
     if (modbus.readRegisters(ENCODER_REGISTER_ADDRESS_START, READ_FUNCTION_CODE, 3, raw)) {
-        // FIXME HACK just for ben's marge testing purposes
-        // RCLCPP_WARN(rclcpp::get_logger("MotorState"), "Motor %d encountered and error while reading", id);
-        // return -1;
-        return 0;
+        RCLCPP_WARN(rclcpp::get_logger("MotorState"), "Motor %d encountered and error while reading", id);
+        return -1;
     }
 
-    double pos = static_cast<double>(raw[1] << 16 | raw[2]) / ENCODER_TO_PULSES;
+    double pos = ((static_cast<double>(raw[0] << 16 | raw[1]) * ENCODER_VALUE_MAX + static_cast<double>(raw[2])) * PULSES_PER_REV) /
+            ENCODER_VALUE_MAX;
+
+    pos = isReversed ? -pos : pos;
+    pos += resetOffset;
+
+    // motorPos = pos;
+    // motorPos = static_cast<double>(raw[1] << 16 | raw[2]) / ENCODER_TO_PULSES;
 
     rosCurrentPos = motorPos2Radians(pos);
     rosCurrentVel = motorVel2Radians(motorVel);
 
     if (count > 30) {
-        RCLCPP_INFO(rclcpp::get_logger("MotorState"), "Motor %d pos: %0.4f, ros: %0.4f, raw: %x %x %x", id, pos, rosCurrentPos,
-                    raw[2], raw[1], raw[0]);
+        RCLCPP_INFO(rclcpp::get_logger("MotorState"), "Motor %d pos: %0.4f, ros: %0.4f, raw: %d [%x %x %x]", id, pos,
+                    rosCurrentPos, (raw[1] << 16 | raw[2]), raw[2], raw[1], raw[0]);
         count = 0;
     }
 
@@ -190,9 +217,12 @@ int Servo42D::write(double time, double period) {
 
     // Trigger homing sequence!
     if (rosTriggerHome >= 1.0) {
-        rosTriggerHome = 0.0;
-        rosIsHomed = 0.0;
-        return home();
+        int ret = home();
+        if(ret == 0){
+            rosTriggerHome = 0.0;
+            rosIsHomed = 0.0;
+        }
+        return ret;
     }
 
     if (isHoming) { // Handle homing
@@ -211,18 +241,28 @@ int Servo42D::write(double time, double period) {
         // Only update the pos on significant change
         if (abs(pos - motorPos) < 1) {
             return 0;
-        } else if (signbit(pos - motorPos) != signbit(vel)) {
+        } else if (abs(vel) < 0.00001) { // Handle stops
+            motorVel = 0.0; 
+            motorPos = trunc(pos);
+            return move(0,0);
+        } 
+        
+        //! DEBUG!!!!
+        RCLCPP_INFO(rclcpp::get_logger("MotorState"),
+                    "Motor %d update to position: current %0.4f (%0.4f), target %0.4f (%0.4f)[%0.4f], error [%0.4f] with "
+                    "velocity %0.4f (%0.4f)",
+                    id, rosCurrentPos, radians2MotorPos(rosCurrentPos), rosTargetPos, pos, motorPos,
+                    pos - motorPos, vel, rosTargetVel);
+        
+        if (signbit(pos - motorPos) != signbit(vel)) {
             // Only move to position in the same direction as the velocity (Fixes weirdness from JTC)
             return 0;
         }
+        
+        // int32_t relPos = pos - motorPos;
+        uint16_t realVel = abs(vel);
 
-        RCLCPP_INFO(rclcpp::get_logger("MotorState"),
-                    "Motor %d update to position %0.4f (%0.4f), error [%0.4f] with velocity %0.4f (%0.4f)", id, pos, rosTargetPos,
-                    rosTargetPos - rosCurrentPos, vel, rosTargetVel);
-
-        uint16_t realVel = abs(vel) < 1.0 ? 1 : abs(vel);
-
-        if (move(pos, realVel)) {
+        if (move(pos - resetOffset, realVel)) {
             return -1;
         }
 

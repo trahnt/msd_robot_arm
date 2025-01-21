@@ -47,7 +47,7 @@ private:
     static constexpr uint16_t PATH_DELAY = 0;
     static constexpr uint16_t PATH_TRIGGER = 0x10;
 
-    static constexpr uint8_t ACCELERATION = 0x5;
+    static constexpr uint8_t ACCELERATION = 0x16;
     static constexpr uint32_t PULSES_PER_REV = 10000;
 
     int move(int32_t pos, uint16_t vel, bool relative = false);

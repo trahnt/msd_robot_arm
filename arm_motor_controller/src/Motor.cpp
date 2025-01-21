@@ -48,6 +48,12 @@ int Motor::exportCommand(std::vector<hardware_interface::CommandInterface> &comm
 
 int Motor::read(double time, double period) {
     (void)time, (void)period;
+
+    // if(time - lastupdate > 1.0){
+    //     RCLCPP_INFO(rclcpp::get_logger("MotorState"), "Motor %d read pos %0.4f, vel %0.4f", id, motorPos, motorVel);
+    //     lastupdate = time;
+    // }
+
     // RCLCPP_INFO(rclcpp::get_logger("MotorState"), "Motor %d read update", id);
     rosCurrentPos = motorPos2Radians(motorPos);
     rosCurrentVel = motorVel2Radians(motorVel);
@@ -84,7 +90,7 @@ int Motor::home(){
     rosTriggerHome = 0.0;
     // maybe add a time.sleep?
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(3000));
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 
     RCLCPP_INFO(rclcpp::get_logger("MotorState"), "...Motor %d home!", id);
     rosIsHomed = 1.0;

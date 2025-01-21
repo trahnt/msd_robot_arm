@@ -11,10 +11,28 @@ public:
     Servo57C(std::shared_ptr<RS485> rs485, uint32_t id, double startingPos = 0);
     ~Servo57C();
 
+    void setMotorHome(uint32_t speed, uint32_t config) override;
+    int configure() override;
+
     int read(double time, double period);
     int write(double time, double period);
 
 private:
+
+    static constexpr int MAX_PACKET_LEN = 11;
+    static constexpr uint8_t DOWNLINK_PACKET_HEAD = 0xFA;
+    static constexpr uint8_t UPLINK_PACKET_HEAD = 0xFB;
+
+    static constexpr uint8_t ACCELERATION = 30;
+    static constexpr uint16_t ENCODER_VALUE_MAX = 0x4000;
+    static constexpr uint32_t PULSES_PER_REV = 3200;
+
+    static void configureGPIO();
+
+    int move(int32_t pos, uint16_t vel, bool relative = false);
+
+    int home();
+    
     /**
      * Calculates the 8-bit CRC checksum for a packet of data
      *
@@ -50,16 +68,13 @@ private:
 
     int sendCommand(uint8_t func, uint8_t &data, uint8_t len, uint8_t responseLen);
 
-    static constexpr int MAX_PACKET_LEN = 11;
-    static constexpr uint8_t DOWNLINK_PACKET_HEAD = 0xFA;
-    static constexpr uint8_t UPLINK_PACKET_HEAD = 0xFB;
+    /* Configuration Options */
+    uint16_t homeVelocity = 0x50;
+    uint8_t homePin;
+    bool homeCW;
 
-    static constexpr uint8_t ACCELERATION = 30;
-    static constexpr uint16_t ENCODER_VALUE_MAX = 0x4000;
-    static constexpr uint32_t PULSES_PER_REV = 3200;
-
-    // int16_t previousVel;
-    // int32_t prevPos;
+    /* State */
+    bool isHoming = false;
 };
 
 } // namespace arm_motor_controller

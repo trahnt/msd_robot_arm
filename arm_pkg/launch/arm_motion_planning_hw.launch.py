@@ -1,3 +1,4 @@
+
 # Copyright 2023 ros2_control Development Team
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -39,8 +40,8 @@ def generate_launch_description():
 
     # Get URDF and Moveit configuration
     moveit_config = (
-        MoveItConfigsBuilder("arm_end_effector", package_name="arm_moveit_config")
-        .robot_description(file_path="../arm_motor_controller/config/armtest.urdf.xacro")
+        MoveItConfigsBuilder("final_hw", package_name="arm_moveit_config")
+        .robot_description(file_path="../arm_pkg/urdf/final_hw.urdf.xacro")
         .trajectory_execution(file_path="config/moveit_controllers.yaml")
         .planning_scene_monitor(
             publish_robot_description=True, publish_robot_description_semantic=True
@@ -52,11 +53,11 @@ def generate_launch_description():
     )
 
     robot_controllers = PathJoinSubstitution(
-        [FindPackageShare("arm_motor_controller"), "config", "arm_controllers.yaml"]
+        [FindPackageShare("arm_pkg"), "config", "all_controllers.yaml"]
     )
 
     rviz_config_file = PathJoinSubstitution(
-        [FindPackageShare("arm_motor_controller"), "config", "moveit.rviz"]
+        [FindPackageShare("arm_pkg"), "rviz", "moveit.rviz"]
     )
 
     controller_manager  = Node(
@@ -99,7 +100,7 @@ def generate_launch_description():
         package="controller_manager",
         executable="spawner",
         # arguments=["arm_planning_group_controller", "--param-file", robot_controllers],
-        arguments=["arm_planning_group_controller", "-c", "/controller_manager"],
+        arguments=["arm_controller", "-c", "/controller_manager"],
         remappings=[
                 ("~/robot_description", "robot_description"),
             ],
@@ -109,17 +110,10 @@ def generate_launch_description():
         package="controller_manager",
         executable="spawner",
         # arguments=["gripper_group_controller", "--param-file", robot_controllers],
-        arguments=["gripper_group_controller", "-c", "/controller_manager"],
+        arguments=["gripper_controller", "-c", "/controller_manager"],
         remappings=[
                 ("~/robot_description", "robot_description"),
             ],
-    )
-
-    marge_spawner = Node(
-        package="controller_manager",
-        executable="spawner",
-        # may have to change 'marge_controller' here
-        arguments=["marge_controller", "-c", "/controller_manager"],
     )
 
     static_tf = Node(
@@ -182,6 +176,13 @@ def generate_launch_description():
     #         on_exit=[joint_state_broadcaster_spawner, arm_controller_spawner, gripper_controller_spawner],
     #     )
     # )
+
+    marge_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        # may have to change 'marge_controller' here
+        arguments=["marge_controller", "-c", "/controller_manager"],
+    )
 
     nodes = [
         robot_state_publisher,
