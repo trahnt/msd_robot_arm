@@ -41,7 +41,7 @@ cd ~/ros2_ws/src
 git clone <REPOSITORY PAGE>
 cd ~/ros2_ws/
 rosdep update --rosdistro=$ROS_DISTRO
-sudo rosdep install --from-paths ./ -i -y --rosdistro ${ROS_DISTRO}
+rosdep install --from-paths ./ -i -y --rosdistro ${ROS_DISTRO}
 ```
 You may need to `sudo apt-get update` before the `rosdep install` step
 
